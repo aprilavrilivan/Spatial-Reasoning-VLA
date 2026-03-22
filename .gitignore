@@ -1,0 +1,15 @@
+.DS_Store
+.git_backup*/
+.vscode/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+GRAID/graid/.venv/
+GRAID/graid/install/
+GRAID/graid/logs/
+
+scene_gen/output/
+
+.pytest_cache/
+.mypy_cache/

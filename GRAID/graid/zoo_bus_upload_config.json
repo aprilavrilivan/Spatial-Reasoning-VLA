@@ -1,0 +1,83 @@
+{
+  "dataset_name": "zoo_bus",
+  "split": "train",
+
+  "image_root": "/Users/xuyifan/Documents/Spatial-VLA/SceneGen/images/output",
+  "save_path": "./datasets/zoo_bus_vqa",
+  "upload_to_hub": true,
+  "hub_private": true,
+  "hub_repo_id": "aprilavrilivan/zoo-bus-vqa",
+  "hub_token_env": "HF_TOKEN",
+  "hub_max_shard_size": "5GB",
+  "hub_commit_message": "",
+  "save_local_copy": false,
+  "cleanup_local_after_upload": false,
+
+
+  "models": [
+    {
+      "backend": "ultralytics",
+      "model_path": "./yolo12s.pt",
+      "confidence_threshold": 0.2
+    }
+  ],
+
+  "use_wbf": false,
+
+  "allowable_set": [
+    "person",
+    "bench",
+    "clock",
+    "giraffe",
+    "elephant",
+    "zebra",
+    "stop sign"
+  ],
+
+  "confidence_threshold": 0.2,
+  "batch_size": 4,
+  "num_workers": 4,
+  "qa_workers": 4,
+  "num_samples": null,
+
+  "questions": [
+    { "name": "CountPeople",                        "params": {} },
+    { "name": "CountAnimals",                       "params": {} },
+    { "name": "CountPeopleAtBench",                 "params": {} },
+    { "name": "CountAnimalsAtStopSign",             "params": {} },
+    { "name": "ListBenchesWithAtLeastKPeople",      "params": {} },
+    { "name": "ListStopSignsWithAtLeastKAnimals",   "params": {} },
+
+    { "name": "ArrivedAtBench",                     "params": {"dist_threshold": 190} },
+    { "name": "ArrivedAtAnimalsAroundStopSigns",    "params": {"dist_threshold": 190} },
+
+    { "name": "ClosestBench",                       "params": {} },
+    { "name": "ClosestStopSign",                    "params": {} },
+    { "name": "PairwiseCloserBench",                "params": {} },
+    { "name": "PairwiseCloserStopSign",             "params": {} },
+    { "name": "ClosestToFurthestBenches",           "params": {} },
+    { "name": "ClosestToFurthestStopSigns",         "params": {} },
+
+    { "name": "GeometricDirectionToBench",          "params": {} },
+    { "name": "GeometricDirectionToStopSign",       "params": {} },
+    { "name": "AvoidObstacleToReachBench",          "params": {} },
+    { "name": "AvoidObstacleToReachStopSign",       "params": {} },
+
+    { "name": "BusHeadingDirection",                "params": {} },
+    { "name": "TurnDirectionToBench",               "params": {} },
+    { "name": "TurnDirectionToStopSign",            "params": {} },
+    { "name": "BenchRelativeToHeading",             "params": {} },
+    { "name": "StopSignRelativeToHeading",          "params": {} },
+
+    { "name": "CountPersonAtClosestBench",          "params": {} },
+    { "name": "ClosestBenchWithPerson",             "params": {} },
+    { "name": "AvoidObstacleToReachClosestBench",   "params": {} },
+    { "name": "AvoidObstacleToReachClosestStopSign","params": {} },
+    { "name": "DirectionToClosestBench",            "params": {} },
+    { "name": "DirectionToClosestStopSign",         "params": {} }
+  ],
+
+  "transforms": {
+    "resize_longest_side": 1280
+  }
+}
