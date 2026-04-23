@@ -11,7 +11,7 @@ GRAID/graid/logs/
 
 scene_gen/output/
 
-zoo-bus-vqa
+zoo-bus-vqa/
 
 .pytest_cache/
 .mypy_cache/
