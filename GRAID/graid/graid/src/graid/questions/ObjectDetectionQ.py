@@ -533,7 +533,7 @@ class ListBenchesWithAtLeastKPeople(Question):
         super().__init__(
             question=(
                 "Each bench in the image has a visible number label beside it (e.g., 1, 2, 3, ...). Use these printed numbers as the bench IDs. "
-                "List the IDs of all benches that have at least {k} people, separated by commas. "
+                "List the IDs of all benches that have at least {k} people in ascending order, separated by commas. "
                 "If none, respond with '0'."
             ),
             variables=["k"],
@@ -588,7 +588,7 @@ class ListStopSignsWithAtLeastKAnimals(Question):
         super().__init__(
             question=(
                 "Each stop sign in the image has a visible number label beside it (e.g., 1, 2, 3, ...). Use these printed numbers as the stop sign IDs. "
-                "List the IDs of all stop signs that have at least {k} animals around them, separated by commas. "
+                "List the IDs of all stop signs that have at least {k} animals around them in ascending order, separated by commas. "
                 "If none, respond with '0'."
             ),
             variables=["k"],

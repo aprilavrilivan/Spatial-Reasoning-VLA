@@ -1,0 +1,12 @@
+torch>=2.3.0
+torchvision>=0.18.0
+transformers>=4.51.0
+datasets>=2.19.0
+accelerate>=0.30.0
+peft>=0.11.0
+pillow>=10.0.0
+pandas>=2.2.0
+numpy>=1.26.0
+sentencepiece>=0.2.0
+protobuf>=4.25.0
+wandb>=0.17.0
