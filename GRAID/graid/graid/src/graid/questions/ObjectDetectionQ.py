@@ -2140,7 +2140,8 @@ class AvoidObstacleToReachClosestBench(Question):
     def __init__(self) -> None:
         super().__init__(
             question=(
-                "Imagine that the clock is now facing the closest bench and wants to reach it. "
+                "Ignore the red dot and the clock's current heading. "
+                "Suppose the clock is already oriented directly toward the closest bench and wants to reach that bench. "
                 "Ignore the people already at that bench. "
                 "If no other object blocks the straight path between the clock and the closest bench, answer 'keep straight'. "
                 "Otherwise, answer 'turn left' or 'turn right' to avoid the first blocking object along that path."
@@ -2231,7 +2232,8 @@ class AvoidObstacleToReachClosestStopSign(Question):
     def __init__(self) -> None:
         super().__init__(
             question=(
-                "Imagine that the clock is now facing the closest stop sign and wants to reach it. "
+                "Ignore the red dot and the clock's current heading. "
+                "Suppose the clock is already oriented directly toward the closest stop sign and wants to reach that stop sign. "
                 "Ignore the animals already grouped with that stop sign. "
                 "If no other object blocks the straight path between the clock and the closest stop sign, answer 'keep straight'. "
                 "Otherwise, answer 'turn left' or 'turn right' to avoid the first blocking object along that path."
