@@ -167,7 +167,7 @@ def parse_args():
     parser.add_argument(
         "--command-pause-sec",
         type=float,
-        default=2.0,
+        default=0.0,
         help="Seconds to wait after each Bluetooth command so the robot can complete the primitive.",
     )
     return parser.parse_args()

@@ -12,7 +12,7 @@ serial connection.
 import time
 import serial
 
-PORT = '/dev/rfcomm0' # REPLACE WITH CORRECT OUTGOING PORT NUMBER
+PORT = '/dev/rfcomm1' # REPLACE WITH CORRECT OUTGOING PORT NUMBER
 BAUD_RATE = 9600
 
 class BluetoothBot:

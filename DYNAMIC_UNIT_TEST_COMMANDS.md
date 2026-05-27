@@ -131,10 +131,11 @@ Replace target IDs with the IDs visible in the current physical scene.
 Uses `TurnDirectionToBench` and `ArrivedAtBench`.
 
 ```bash
-python dynamic_unit_test_runner.py \
+uv run dynamic_unit_test_runner.py \
   --test face_arrive_bench \
   --bench-number 2 \
-  --trials 10 \
+  --trials 3 \
+  --command-pause-sec 1.0
   --execute-actions
 ```
 

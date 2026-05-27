@@ -587,3 +587,5 @@ if __name__ == "__main__":
         manual_label=not args.no_manual_label,
     )
     runner.run(args.test, args.trials, args)
+    runner.close()
+    
