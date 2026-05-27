@@ -1,0 +1,8 @@
+lf-3pi/bin/*
+lf-3pi/src-gen/*
+lf-3pi/include/*
+__pycache__/
+*.py[cod]
+.DS_Store
+._*
+real_robot_results/

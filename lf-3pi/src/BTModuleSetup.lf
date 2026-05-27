@@ -1,0 +1,278 @@
+/**
+ * Lingua Franca program for the Pololu 3pi+ 2040 to configure an HC-05 Bluetooth module.
+ *
+ * This program sends AT commands to change the HC-05's name and password.
+ *
+ * I-Jui: Disclaimer, this is adapted from LLM generated code with hallucinated nonsense fixed.
+ *
+ * Hardware Setup:
+ * 1. GP28 (UART0 TX) -> HC-05 RXD
+ * 2. GP29 (UART0 RX) -> HC-05 TXD
+ * 3. 3V3 (OUT)       -> HC-05 VCC
+ * 4. GND             -> HC-05 GND
+ * 5. 3V3 (OUT)       -> HC-05 EN (only for AT mode to set name/pswd)
+ *
+ * How to use:
+ * 1. Connect the HC-05 as described above.
+ * 2. IMPORTANT: Power on the RP2040 (which powers the HC-05) ONLY AFTER
+ * the KEY/EN pin is already connected to 3.3V. This boots the
+ * module into AT command mode (baud rate 38400).
+ * 3. Compile and flash this program to the 3pi+ 2040.
+ * 4. Open the serial monitor (e.g., `screen -b 115200 /dev/ttyACM0`).
+ * 5. The program will automatically send the commands.
+ *
+ */
+target C {
+    platform: {
+        name: "rp2040",
+        board: "pololu_3pi_2040_robot"
+    },
+    keepalive: true,
+    threading: false
+};
+
+import Display from "lib/Display.lf"
+
+preamble {=
+    #include "pico/stdlib.h"
+    #include <stdio.h>
+    #include <hardware/uart.h>
+    #include <hardware/irq.h>
+    #include <string.h>
+=}
+
+
+main reactor {
+    preamble {=
+        // Define the UART for the HC-05
+        #define UART_ID uart0
+        #define BAUD_RATE 38400 // HC-05 AT mode baud rate
+        #define DATA_BITS 8
+        #define STOP_BITS 1
+        #define PARITY    UART_PARITY_NONE
+
+        // Define UART pins
+        #define UART_TX_PIN 28
+        #define UART_RX_PIN 29
+
+        // --- Ring Buffer for ISR-driven UART ---
+        // The ISR (producer) writes to head.
+        // The main loop (consumer) reads from tail.
+        #define RING_BUF_SIZE 256
+        volatile char uart_ring_buffer[RING_BUF_SIZE];
+        volatile uint ring_head = 0;
+        volatile uint ring_tail = 0;
+
+        // --- Line Buffer for Main Loop ---
+        // The poll_timer reaction assembles lines into this buffer.
+        #define LINE_BUF_SIZE 128
+        volatile char uart_line_buffer[LINE_BUF_SIZE];
+        volatile int line_idx = 0;
+        volatile bool line_ready = false;
+
+        // RX interrupt handler (ISR)
+        // This is now minimal, fast, and non-blocking.
+        void on_uart_rx() {
+            while (uart_is_readable(UART_ID)) {
+                char ch = uart_getc(UART_ID);
+                
+                // Calculate next head position
+                uint next_head = (ring_head + 1) % RING_BUF_SIZE;
+
+                // Check if buffer is full
+                if (next_head != ring_tail) {
+                    // Not full, add char to buffer
+                    uart_ring_buffer[ring_head] = ch;
+                    ring_head = next_head;
+                } else {
+                    // Buffer is full, this char is dropped.
+                    // This is the only safe place to drop data.
+                }
+            }
+        }
+
+        // Function to initialize UART0 for the HC-05
+        void setup_uart() {
+            // Initialize UART
+            uart_init(UART_ID, BAUD_RATE);
+
+            // Set the TX and RX pins
+            gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+            gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
+
+            // Set format
+            uart_set_hw_flow(UART_ID, false, false);
+            uart_set_format(UART_ID, DATA_BITS, STOP_BITS, PARITY);
+
+            // Turn off FIFO's - we want to do this character by character
+            uart_set_fifo_enabled(UART_ID, false);
+
+            // Set up and enable the RX interrupt
+            int UART_IRQ = (UART_ID == uart0) ? UART0_IRQ : UART1_IRQ;
+            irq_set_exclusive_handler(UART_IRQ, on_uart_rx);
+            irq_set_enabled(UART_IRQ, true);
+
+            // Enable the UART to fire an interrupt when data is received.
+            uart_set_irq_enables(UART_ID, true, false);
+
+            printf("Bluetooth UART initialized at %d baud.\n", BAUD_RATE);
+        }
+
+        // Function to send a command to the HC-05
+        // All AT commands must end with \r\n
+        void setup_msg(const char* msg) {
+            printf("Sending: %s\n", msg);
+            uart_puts(UART_ID, msg);
+            uart_puts(UART_ID, "\r\n");
+        }
+    =}
+
+    state cmd_step: int = 0;
+    state new_name: string = "SVLM-bot";
+    state new_pin: string = "1234";
+
+    physical action command_delay; // Delay between commands
+    physical action check_response; // Triggered by interrupt
+    
+    d = new Display();
+
+    reaction(startup) -> command_delay, d.line0 {=
+        // Initialize stdio over USB for printing
+        stdio_init_all();
+        
+        // Start the command sequence after 5s
+        // starting too quickly and the monitor won't catch it
+        lf_schedule(command_delay, MSEC(5000));
+    =}
+
+    /*timer foo(0,1 sec);
+    reaction (foo) {=
+        printf("foo\n");
+    =}*/
+
+    reaction(command_delay) -> d.line0 {=
+        char command_buffer[64];
+
+        switch (self->cmd_step) {
+            case 0:
+                printf("RP2040 HC-05 Configurator Started.\n");
+                lf_set(d.line0, "START");
+                setup_uart();
+                lf_schedule(command_delay, MSEC(1000));
+                break;
+            case 1:
+                printf("\nStep 0: Sending AT (Test command)\n");
+                lf_set(d.line0, "TEST");
+                setup_msg("AT");
+                break;
+            case 2:
+                printf("\nStep 1: Setting Name to '%s'\n", self->new_name);
+                lf_set(d.line0, "NAME");
+                snprintf(command_buffer, 64, "AT+NAME=%s", self->new_name);
+                setup_msg(command_buffer);
+                break;
+            case 3:
+                printf("\nStep 2: Setting PIN to '%s'\n", self->new_pin);
+                lf_set(d.line0, "PSWD");
+                // Note: PSWD changes the pairing code.
+                snprintf(command_buffer, 64, "AT+PSWD=%s", self->new_pin);
+                setup_msg(command_buffer);
+                break;
+            case 4:
+                printf("\nStep 3: Setting UART setting to 9600,0,0\n");
+                lf_set(d.line0, "UART");
+                setup_msg("AT+UART=9600,0,0");
+                break;
+            case 5:
+                printf("\nStep 4: Query UART settings\n");
+                lf_set(d.line0, "UART?");
+                setup_msg("AT+UART?");
+                break;
+            case 6:
+                printf("\nStep 5: Querying new name\n");
+                lf_set(d.line0, "NAME?");
+                setup_msg("AT+NAME?");
+                break;
+            case 7:
+                printf("\nStep 6: Querying new password\n");
+                lf_set(d.line0, "PSWD?");
+                setup_msg("AT+PSWD?");
+                break;
+            case 8:
+                printf("\nConfiguration complete.\n");
+                lf_set(d.line0, "DONE");
+                // No more commands
+                return;
+        }
+
+        self->cmd_step++;
+    =}
+
+    // This reaction is triggered by the UART RX interrupt
+    // when a full line ('\n') has been received.
+    reaction(check_response) -> command_delay, d.line1 {=
+        volatile char* resp = (char*) uart_line_buffer;
+        // We can safely read the response.
+        printf("HC-05 Response: %s\n", resp); // Print the line
+        char buf[17];
+        snprintf(buf, 17, resp);
+        lf_set(d.line1, buf);
+
+        // Check for terminal responses "OK" or "ERROR"
+        bool is_terminal = (strstr(resp, "OK") != NULL) || 
+                           (strstr(resp, "ERROR") != NULL);
+
+        // Clear the line_ready flag *after* processing.
+        // This tells the poller it can assemble the next line.
+        line_ready = false; 
+
+        if (is_terminal && self->cmd_step < 9) {
+            lf_schedule(command_delay, MSEC(1000));
+        } // else waiit for terminal response from BT module
+    =}
+
+    // This reaction polls the response_ready flag.
+    // This is necessary because the interrupt handler (on_uart_rx)
+    // cannot schedule a physical action directly.
+    // We poll quickly to check the flag set by the ISR.
+    timer poll_timer(0, 10 msec);
+    reaction(poll_timer) -> check_response {=
+        // Do not process new chars if the main loop
+        // hasn't consumed the last line.
+        if (line_ready) {
+            return;
+        }
+
+        // Consume characters from the ring buffer
+        while (ring_tail != ring_head) {
+            char ch = uart_ring_buffer[ring_tail];
+            ring_tail = (ring_tail + 1) % RING_BUF_SIZE;
+
+            // Treat EITHER as line ending
+            if (ch == '\n' || ch == '\r') {
+                if (line_idx > 0) { // We have a complete line
+                    uart_line_buffer[line_idx] = '\0'; // Null terminate
+                    line_ready = true;
+                    line_idx = 0; // Reset for next line
+                    
+                    // Schedule the main reaction
+                    lf_schedule(check_response, 0);
+                    
+                    // Stop processing chars THIS cycle.
+                    // Wait for check_response to clear line_ready.
+                    break;
+                }
+                // else: empty line, just ignore it.
+            } else {
+                // It's a normal character
+                if (line_idx < LINE_BUF_SIZE - 1) {
+                    uart_line_buffer[line_idx++] = ch;
+                } else {
+                    // Line buffer overflow, reset.
+                    // This line is lost, but the ring buffer is fine.
+                    line_idx = 0;
+                }
+            }
+        }
+    =}
+}

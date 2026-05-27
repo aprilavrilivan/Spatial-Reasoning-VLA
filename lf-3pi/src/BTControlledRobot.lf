@@ -1,0 +1,562 @@
+
+/******************************************************************************
+ * Lingua Franca C program for the Pololu 3pi+ 2040. The robot receives text
+ * commands through the connected HC-05 Bluetooth module and moves accordingly.
+ * 
+ * by I-Jui Lee
+ *
+ * HC-05 Module Setup:
+ * 1. GP28 (UART0 TX) -> HC-05 RXD
+ * 2. GP29 (UART0 RX) -> HC-05 TXD
+ * 3. 3V3 (OUT)       -> HC-05 VCC
+ * 4. GND             -> HC-05 GND
+ *
+ * How to Use:
+ * 1. Connect the HC-05 as described above.
+ * 2. Compile and flash this program to the 3pi+ 2040 robot.
+ * 3. Disconnect THEN power on the robot 
+ *    (IMPORTANT, ensures BT module and the MCU are synced).
+ * 4. Robot should be ready to receive text commands through BT.
+ * 
+ * Command Format: "<MODE>,<SPEED>,<GOAL>" delimited by commas (',')
+ *
+ *   MODE
+ *   A single char to denote the type of movement: 'f'orward, 'b'ackward,
+ *   'l'eft turn, 'r'ight turn, 's'top. Robot will simply stop if command
+ *   isn't recognized.
+ *
+ *   SPEED
+ *   An unsigned integer indicating the speed multiplier. Base driving speed
+ *   is 0.04f, and turning speed is 0.02f.
+ *   
+ *   GOAL
+ *   An unsigned integer indicating the goal distance (cm) or angle (deg) when 
+ *   driving or turning, respecttively.
+ *
+ * Bluetooth device name: SVLM-bot
+ * Bluetooth device address: 00:14:03:06:75:c2
+ * Bluetooth connection PIN: 1234
+ *****************************************************************************/
+
+target C {
+    platform: {
+        name: "rp2040",
+        board: "pololu_3pi_2040_robot"
+    },
+    keepalive: true,
+    threading: false
+}
+
+import Display from "lib/Display.lf"
+import MotorsWithFeedback from "lib/MotorsWithFeedback.lf"
+import Encoders from "lib/Encoders.lf"
+import GyroAngle from "lib/IMU.lf"
+
+preamble {=
+    #include <hardware/gpio.h>
+    #include <hardware/uart.h>
+    #include <hardware/irq.h>
+    #include <pico/stdlib.h>
+    #include <string.h>
+    #include <stdlib.h>
+    #include <stdio.h>
+=}
+
+reactor EncoderDist {
+    input angle_left: int32_t
+    input angle_right: int32_t
+
+    output left: float
+    output right: float
+
+    preamble {=
+      #define PI   3.14159
+      #define DIA  3.175
+    =}
+    
+    reaction(angle_left, angle_right) -> left, right {=
+      lf_set(left, (angle_left->value/360.0f) * PI * DIA);
+      lf_set(right, (angle_right->value/360.0f) * PI * DIA);
+    =}
+}
+
+reactor GyroCalibrated {
+    preamble {=
+        #define DRIFT -0.655f // [DEG/S]
+    =}
+    // correcting for drift in gyroscope z-axis
+
+    input trigger: bool
+    input reset_measurement: bool
+    output cur_angle: float
+
+    state start_time: instant_t
+    state start_angle: float
+
+    gyro = new GyroAngle();
+
+    trigger -> gyro.trigger;
+
+    reaction(startup) {=
+        self->start_time = lf_time_physical();
+        self->start_angle = 0;
+    =}
+
+    reaction(reset_measurement) {=
+        self->start_time = lf_time_physical();
+        self->start_angle = 0;
+    =}
+
+    reaction(gyro.z) -> cur_angle {=
+        float angle = gyro.z->value;
+        interval_t time_elapsed = lf_time_physical() - self->start_time;
+        angle += DRIFT * time_elapsed / SEC(1);
+        lf_set(cur_angle, angle - self->start_angle);
+    =}
+}
+
+reactor Robot(sample_period: time = 50 ms) {
+    preamble {=
+        #define SIGMOID(t)      (1/(1+exp(t)))
+        #define GATE(a, x, b)   (fmin(b, fmax(a, x)))
+        #define DRIVE_SPEED 0.04f
+        #define TURN_SPEED  0.02f
+        #define DRIVE_K1    0.001f
+        #define DRIVE_K2   -0.002f
+        #define DRIVE_TOL   0.5f
+        #define TURN_K      0.0001f
+        #define TURN_TOL    5.0f    
+        #define DELIM ","
+    =}
+
+    input command: string
+ 
+    state start_angle: float = 0
+    state cur_angle: float
+ 
+    state start_dist_L: float = 0
+    state start_dist_R: float = 0
+    state cur_dist_L: float
+    state cur_dist_R: float
+ 
+    state reset_angle: bool = true
+    state reset_dist: bool = true
+
+    state direction: int = 1;
+    state speed: int = 0;
+    state goal: int = 0;
+
+    // for timing analysis
+    output reply: string
+
+    output notify0: string
+    output notify1: string
+    output notify2: string
+    output notify3: string
+
+    motor = new MotorsWithFeedback();
+    encoder = new Encoders();
+    dist = new EncoderDist();
+    gyro = new GyroCalibrated();
+
+    // sensor polling timer
+    timer sample(0, sample_period);
+
+    // speed update timer 
+    // nominally same period as sensor
+    timer update(0, sample_period);
+
+    // encoder to distance
+    encoder.left -> dist.angle_left;
+    encoder.right -> dist.angle_right;
+
+    // encoder to motor feedback
+    encoder.left -> motor.left;
+    encoder.right -> motor.right;
+
+    reaction (startup) -> notify0 {=
+      
+    =}
+
+    reaction (sample) -> encoder.trigger, gyro.trigger {=
+        // update distance
+        lf_set(encoder.trigger, true);
+        
+        // update angle
+        lf_set(gyro.trigger, true);
+    =}
+
+    reaction (gyro.cur_angle) {=
+        if (self->reset_angle) {
+            self->reset_angle = false;
+            self->start_angle = gyro.cur_angle->value;
+            self->cur_angle = 0;
+        } else {
+            self->cur_angle = gyro.cur_angle->value - self->start_angle;
+        }
+    =}
+
+    reaction (dist.left, dist.right) {=
+        if (self->reset_dist) {
+            self->reset_dist = false;
+            self->start_dist_L = dist.left->value;
+            self->start_dist_R = dist.right->value;
+            self->cur_dist_L = 0;
+            self->cur_dist_R = 0;
+        } else {
+            self->cur_dist_L = dist.left->value - self->start_dist_L;
+            self->cur_dist_R = dist.right->value - self->start_dist_R;
+        }
+    =}
+
+    initial mode DRIVE {
+        reaction(command) -> reset(TURN), reply {=
+
+            instant_t receive_time = lf_time_physical();
+
+            if (strcmp(command->value, "") == 0) {
+                return;
+            }
+
+            // print command to serial output for debugging
+            printf("command: %s\n", command->value);
+
+            // parse command
+            string token;
+
+            // mode: char
+            token = strtok(command->value, DELIM);
+            char cmd_mode = token[0];
+
+            // speed: integer
+            token = strtok(NULL, DELIM);
+            self->speed = strtol(token, NULL, 10);
+
+            // goal: integer
+            token = strtok(NULL, DELIM);
+            self->goal = strtol(token, NULL, 10);
+
+            printf("parsed command: mode %c, speed %d, goal %d\n", cmd_mode, self->speed, self->goal);
+
+            switch (cmd_mode) {
+                case 'f':
+                self->direction = 1;
+                break;
+                
+                case 'b':
+                self->direction = -1;
+                break;
+                
+                case 'l':
+                self->direction = 1;
+                lf_set_mode(TURN);
+                break;
+
+                case 'r':
+                self->direction = -1;
+                lf_set_mode(TURN);
+                break;
+
+                case 's': // just stop if command not recognized
+                default:
+                self->speed = 0;
+                break;
+            }
+
+            instant_t reply_time = lf_time_physical();
+            char reply_str[30];
+            snprintf(reply_str, 30, "%lld\n", reply_time - receive_time);
+            lf_set(reply, reply_str);
+
+            self->reset_angle = true;
+            self->reset_dist = true;
+        =}
+
+        reaction(update) -> motor.left_speed, motor.right_speed {=
+            float progress = self->cur_dist_L * self->direction;
+            float difference = progress - self->goal;
+            
+            // stop if goal distance reached
+            if ( fabs(difference) < DRIVE_TOL ) {
+                self->speed = 0;
+            }
+
+            float speed_diff = motor.left_speed->value - motor.right_speed->value;
+            float base_speed = self->speed * DRIVE_SPEED;
+
+            // We're going straight as long as angle turned and left/right speed 
+            // difference are both close to 0. Angle is proportional to difference 
+            // in left/right distances, so it's basically a PI controller
+            float angle_factor = ((self->cur_angle * DRIVE_K1) + (speed_diff * DRIVE_K2)) * self->direction;
+            // Slow down when approachhing goal.
+            float speed_factor = SIGMOID(10*difference / self->goal);
+
+            float new_left = GATE(-2*base_speed, base_speed * speed_factor + angle_factor, 2*base_speed);
+            float new_right = GATE(-2*base_speed, base_speed * speed_factor - angle_factor, 2*base_speed);
+
+            printf("base speed %.2f, progress %.2f, goal %d, left %.2f, right %.2f\n",
+                base_speed, progress, self->goal, new_left, new_right);
+            lf_set(motor.left_speed, self->direction * new_left);
+            lf_set(motor.right_speed, self->direction * new_right);
+        =}
+    }
+
+    mode TURN {
+        reaction(command) -> reset(DRIVE) {=
+            if (strcmp(command->value, "") == 0) {
+                return;
+            }
+
+            // print command to serial output for debugging
+            printf("command: %s\n", command->value);
+
+            // parse command
+            string token;
+
+            // mode: char
+            token = strtok(command->value, DELIM);
+            char cmd_mode = token[0];
+
+            // speed: integer
+            token = strtok(NULL, DELIM);
+            self->speed = strtol(token, NULL, 10);
+
+            // goal: integer
+            token = strtok(NULL, DELIM);
+            self->goal = strtol(token, NULL, 10);
+
+            printf("parsed command: mode %c, speed %d, goal %d\n", cmd_mode, self->speed, self->goal);
+
+            switch (cmd_mode) {
+                case 'f':
+                self->direction = 1;
+                lf_set_mode(DRIVE);
+                break;
+                
+                case 'b':
+                self->direction = -1;
+                lf_set_mode(DRIVE);
+                break;
+                
+                case 'l':
+                self->direction = 1;
+                break;
+
+                case 'r':
+                self->direction = -1;
+                break;
+
+                case 's': 
+                default: // just stop if command not recognized
+                self->speed = 0;
+                break;
+            }
+
+            self->reset_angle = true;
+            self->reset_dist = true;
+        =}
+
+        reaction(update) -> reset(DRIVE), motor.left_speed, motor.right_speed {=
+            float progress = self->cur_angle * self->direction;
+            float difference = progress - self->goal;
+            
+            // stop if goal distance reached
+            if ( fabs(difference) < TURN_TOL ) {
+                self->speed = 0;
+            }
+
+            float speed_diff = motor.left_speed->value - motor.right_speed->value;
+            float base_speed = self->speed * TURN_SPEED;
+
+            // Slow down as we approach goal.
+            float angle_factor = SIGMOID(20*difference / self->goal);
+            // We're trying to keep the robot stationary as it turns, so 
+            // the difference between left/right distances should be 0
+            float speed_factor = (self->cur_dist_L + self->cur_dist_R) * TURN_K;
+
+            float new_left = -GATE(0, base_speed * angle_factor - speed_factor, 2*base_speed);
+            float new_right = GATE(0, base_speed * angle_factor - speed_factor, 2*base_speed);
+
+            printf("base speed %.2f, progress %.2f, goal %d, left %.2f, right %.2f\n",
+                base_speed, progress, self->goal, new_left, new_right);
+            lf_set(motor.left_speed, self->direction * new_left);
+            lf_set(motor.right_speed, self->direction * new_right);
+        =}
+    }
+}
+
+reactor BTReceiver {
+    preamble {=
+        // Define the UART for the HC-05
+        #define UART_ID     uart0
+        #define BAUD_RATE   9600
+        #define DATA_BITS   8
+        #define STOP_BITS   1
+        #define PARITY      UART_PARITY_NONE
+
+        // Define UART pins
+        #define UART_TX_PIN 28
+        #define UART_RX_PIN 29
+
+         // --- Ring Buffer for ISR-driven UART ---
+         #define RING_BUF_SIZE 256
+        volatile char uart_ring_buffer[RING_BUF_SIZE];
+        volatile uint ring_head = 0;
+        volatile uint ring_tail = 0;
+
+        // --- Line Buffer for Main Loop ---
+        #define LINE_BUF_SIZE 128
+        volatile char uart_line_buffer[LINE_BUF_SIZE];
+        volatile int line_idx = 0;
+        volatile bool line_ready = false;
+
+        // RX interrupt handler (ISR)
+        void on_uart_rx() {
+            while (uart_is_readable(UART_ID)) {
+                char ch = uart_getc(UART_ID);
+
+                // calculate next head position
+                uint next_head = (ring_head + 1) % RING_BUF_SIZE;
+
+                // check if buffer is full
+                if (next_head != ring_tail) {
+                    // not full, add char to buffer
+                    uart_ring_buffer[ring_head] = ch;
+                    ring_head = next_head;
+                }
+                // else buffer full, char dropped
+            }
+        }
+
+        // initialize UART0 for the HC-05
+        void setup_uart() {
+            // initialize UART
+            uart_init(UART_ID, BAUD_RATE);
+
+            // set the TX and RX pins
+            gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+            gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
+
+            // set format
+            uart_set_hw_flow(UART_ID, false, false);
+            uart_set_format(UART_ID, DATA_BITS, STOP_BITS, PARITY);
+
+            // turn off FIFO; char-by-char
+            uart_set_fifo_enabled(UART_ID, false);
+
+            // set up and enable RX interrupt
+            int UART_IRQ = (UART_ID == uart0) ? UART0_IRQ : UART1_IRQ;
+            irq_set_exclusive_handler(UART_IRQ, on_uart_rx);
+            irq_set_enabled(UART_IRQ, true);
+
+            // enable UART to fire an interrupt when data received
+            uart_set_irq_enables(UART_ID, true, false);
+
+            printf("Bluetooth UART initialized at %d baud.\n", BAUD_RATE);
+        }
+
+        // send message to HC-05 (end with CRLF)
+        void send_msg(const char* msg) {
+            printf("Sending: %s\n", msg);
+            uart_puts(UART_ID, msg);
+            uart_puts(UART_ID, "\r\n");
+        }
+    =}
+
+    input reply: string
+
+    state cur_state: char = 's';
+    state count: int = 0
+    
+    output command: string
+
+    timer poll_timer(0, 10 msec);
+
+    physical action cmd_received;
+
+    // regularly poll for chars from BT module
+    reaction(poll_timer) -> cmd_received {=
+        // do not process if main loop hasn't processed last line
+        if (line_ready) {
+            return;
+        }
+
+        // process characters from ring buffer
+        while (ring_tail != ring_head) {
+            char ch = uart_ring_buffer[ring_tail];
+            ring_tail = (ring_tail + 1) % RING_BUF_SIZE;
+
+            // handle bksp/del for basic terminal editing
+            if (ch == '\b' || ch == 127) {
+                if (line_idx > 0) {
+                    line_idx--;
+                }
+                continue; // don't add to buffer
+            }
+
+            // treat \n or \r as line end
+            if (ch == '\n' || ch == '\r') {
+                if (line_idx > 0) { // complete line
+                    uart_line_buffer[line_idx] = '\0'; // null terminate
+                    line_ready = true;
+                    line_idx = 0; // reset for next line
+                    
+                    // schedule physical action
+                    lf_schedule(cmd_received, 0);
+                    
+                    // stop processing chars for now
+                    break;
+                }
+                // else empty line, just ignore
+            } else {
+                // regular char
+                if (line_idx < LINE_BUF_SIZE - 1) {
+                    uart_line_buffer[line_idx++] = ch;
+                } else {
+                    // buffer overflow and reset.
+                    line_idx = 0;
+                }
+            }
+        }
+    =}
+
+    // triggered when a full line has been received
+    reaction(cmd_received) -> command {=
+        // read the line buffer
+        const char* cmd = (const char*) uart_line_buffer;
+
+        // print to USB serial output for debugging
+        printf("Command Received: '%s'\n", cmd);
+
+        lf_set(command, cmd);
+
+        // clear line_ready flag after processing
+        line_ready = false; 
+    =}
+
+    timer delay_start(3 s);
+
+    reaction(delay_start) {=
+        // delayed setup to allow serial monitor to catch the message
+        setup_uart();
+    =}
+
+    reaction(reply) {=
+        send_msg(reply->value);
+    =}
+}
+
+main reactor {
+    robot = new Robot()
+    display = new Display()
+    rcvr = new BTReceiver()
+
+    rcvr.command -> robot.command
+    robot.reply -> rcvr.reply
+
+    robot.notify0 -> display.line0
+    robot.notify1 -> display.line1
+    robot.notify2 -> display.line2
+    robot.notify3 -> display.line3
+
+}
