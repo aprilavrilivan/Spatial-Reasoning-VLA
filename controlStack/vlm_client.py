@@ -15,7 +15,7 @@ from answer_parsing import clean_text
 
 DEFAULT_MODEL = "Qwen/Qwen3-VL-4B-Instruct"
 DEFAULT_ADAPTER_PATH = str(Path(__file__).resolve().parent / "best_checkpoint")
-DEFAULT_REMOTE_URL = "http://127.0.0.1:8899/ask"
+DEFAULT_REMOTE_URL = "https://chem-dakota-teams-appropriations.trycloudflare.com/ask"
 DEFAULT_REMOTE_TIMEOUT_SEC = 120
 SHORT_ANSWER_WRAPPER = (
     "Answer the visual question using a short final answer only. "
