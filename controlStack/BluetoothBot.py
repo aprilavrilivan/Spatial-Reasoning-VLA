@@ -8,11 +8,14 @@ serial connection.
  * Bluetooth device address: 00:14:03:06:75:c2
  * Bluetooth connection PIN: 1234
 
+to bind port:
+sudo rfcomm bind 0 98:D3:C1:FE:CF:7C 1
+
 """
 import time
 import serial
 
-PORT = '/dev/rfcomm1' # REPLACE WITH CORRECT OUTGOING PORT NUMBER
+PORT = '/dev/rfcomm0' # REPLACE WITH CORRECT OUTGOING PORT NUMBER
 BAUD_RATE = 9600
 
 class BluetoothBot:

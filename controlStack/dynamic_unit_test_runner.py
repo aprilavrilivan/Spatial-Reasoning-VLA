@@ -535,8 +535,8 @@ def parse_args():
     parser.add_argument("--execute-actions", action="store_true", help="Actually send Bluetooth commands to the robot.")
     parser.add_argument("--no-display", action="store_true")
     parser.add_argument("--no-manual-label", action="store_true", help="Do not prompt the operator for final success labels.")
-    parser.add_argument("--max-steps", type=int, default=30)
-    parser.add_argument("--max-turn-steps", type=int, default=24)
+    parser.add_argument("--max-steps", type=int, default=15)
+    parser.add_argument("--max-turn-steps", type=int, default=15)
     parser.add_argument("--step-cm", type=int, default=5)
     parser.add_argument("--turn-deg", type=int, default=10)
     parser.add_argument(
