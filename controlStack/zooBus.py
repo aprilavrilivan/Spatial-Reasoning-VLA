@@ -95,83 +95,88 @@ if __name__ == "__main__":
     exit_ans = False
     exit_ans_1 = False
     exit_ans_2 = ""
-    if(bus_ordering[0] != "N/A"):
-            
-        while(exit_ans):
-            #Get closest bench with person
-            target_bus = int(parse_int(run.ask(img=img,question=f"{question_dict['ClosestBenchWithPerson']}",phase="Go_to_closest_bench" ,question_type="ClosestBench")))
-            #Are we at closest bench?
-            while(exit_ans_1):
-                if(exit_ans_2 == "yes"):
-                    #Yes, wait for people to onboard
-                    camera.update()
-                    img = camera.read()
-                    display(img)
-                    exit_ans_1 = run.ask(step=step,img=img,question=f"{question_dict["CountPersonAtClosestBench"]}",phase="Onboarding",question_type="Count_People")
-                    exit_ans_1 = int(parse_int(exit_ans_1)) != 0
-                    step += 1
-                else:
-                    #No, driver closer
-                    camera.update()
-                    img = camera.read()
-                    display(img)
-                    robot_controls = run.ask(step=step, img=img,question=f"{question_dict['AvoidObstacleToReachBench']} bench_number = {target_bus}",phase="Go_to_closest_bench",question_type="ArrivedAtBench")
-                    robot_controls = parse_action(robot_controls)
-                    bot.send_message(robot_controls)
-                    camera.update()
-                    img = camera.read()
-                    exit_ans_2 = run.ask(step=step,img=img,question=f"{question_dict['ArrivedAtBench']} bench_number = {target_bus}",question_type="ArrivedAtBench",phase="Go_to_closest_bench")
-                    exit_ans_2 = parse_yes_no(exit_ans_2)
-                    step += 1
-            #Are all the people on the field picked up?
-            camera.update()
-            img = camera.read()
-            display(img)
-            exit_ans = int(parse_int(run.ask(step=step,img=img,question=question_dict["CountPeople"],phase="Go_to_closest_bench",question_type="CountPeople"))) != 0
-            step += 1
+    try: 
+        if(bus_ordering[0] != "N/A"):
+                
+            while(exit_ans):
+                #Get closest bench with person
+                target_bus = int(parse_int(run.ask(img=img,question=f"{question_dict['ClosestBenchWithPerson']}",phase="Go_to_closest_bench" ,question_type="ClosestBench")))
+                #Are we at closest bench?
+                while(exit_ans_1):
+                    if(exit_ans_2 == "yes"):
+                        #Yes, wait for people to onboard
+                        camera.update()
+                        img = camera.read()
+                        display(img)
+                        exit_ans_1 = run.ask(step=step,img=img,question=f"{question_dict["CountPersonAtClosestBench"]}",phase="Onboarding",question_type="Count_People")
+                        exit_ans_1 = int(parse_int(exit_ans_1)) != 0
+                        step += 1
+                    else:
+                        #No, driver closer
+                        camera.update()
+                        img = camera.read()
+                        display(img)
+                        robot_controls = run.ask(step=step, img=img,question=f"{question_dict['AvoidObstacleToReachBench']} bench_number = {target_bus}",phase="Go_to_closest_bench",question_type="ArrivedAtBench")
+                        robot_controls = parse_action(robot_controls)
+                        bot.send_message(robot_controls)
+                        camera.update()
+                        img = camera.read()
+                        exit_ans_2 = run.ask(step=step,img=img,question=f"{question_dict['ArrivedAtBench']} bench_number = {target_bus}",question_type="ArrivedAtBench",phase="Go_to_closest_bench")
+                        exit_ans_2 = parse_yes_no(exit_ans_2)
+                        step += 1
+                #Are all the people on the field picked up?
+                camera.update()
+                img = camera.read()
+                display(img)
+                exit_ans = int(parse_int(run.ask(step=step,img=img,question=question_dict["CountPeople"],phase="Go_to_closest_bench",question_type="CountPeople"))) != 0
+                step += 1
 
-    #Step 3
-    camera.update()
-    img = camera.read()
-    stopSign_list = run.ask(step=step,img=img,question=f"{question_dict['ListStopSignsWithAtLeastKAnimals']} k=1",question_type="ListStopSignsWithAtLeastKAnimals",phase="Go_to_closest_zoo")
-    stopSign_list= parse_id_list(bus_ordering)
-    step += 1
-    #Step 2:
-    
-    display(img)
-    exit_ans = False
-    exit_ans_1 = False
-    exit_ans_2 = ""
-    if(stopSign_list[0] != "N/A"):
-        while(exit_ans):
-            #Get closest stop sign 
-            target_bus = int(parse_int(run.ask(step=step,img=img,question=f"{question_dict['ClosestStopSign']}",question_type="ClosestStopSign",phase="Go_to_closest_zoo")))
-            #Are we at closest stop sign?
-            step += 1
-            while(exit_ans_1):
-                if(exit_ans_2 == "yes"):
-                    #Yes, sleep for a little bit
-                    time.sleep(3)
-                    step +=1
-                    
-                else:
-                    #No, driver closer
-                    #We dont have anyway to prevent revisiting zoos at this point
-                    camera.update()
-                    img = camera.read()
-                    display(img)
-                    robot_controls = run.ask(step=step,img=img,question=f"{question_dict['AvoidObstacleToReachClosestBench']}",question_type="AvoidObstacleToReachClosestBench",phase="Go_to_closest_zoo")
-                    robot_controls = parse_action(robot_controls)
-                    bot.send_message(robot_controls)
-                    camera.update()
-                    img = camera.read()
-                    exit_ans_2 = run.ask(step=step,img=img,question=f"{question_dict['ArrivedAtAnimalsAroundStopSigns']}",question_type="ArrivedAtAnimalsAroundStopSigns",phase="Go_to_closest_zoo")
-                    exit_ans_2 = parse_yes_no(exit_ans_2)
-                    step +=1
-            #Are all the animals on the field picked up?
-            camera.update()
-            img = camera.read()
-            display(img)
-            exit_ans = int(parse_int(run.ask(step=step,img=img,question=question_dict["ListStopSignsWithAtLeastKAnimals"],question_type="ListStopSignsWithAtLeastKAnimals",phase="Go_to_closest_zoo"))) != 0
-            step += 1
+        #Step 3
+        camera.update()
+        img = camera.read()
+        stopSign_list = run.ask(step=step,img=img,question=f"{question_dict['ListStopSignsWithAtLeastKAnimals']} k=1",question_type="ListStopSignsWithAtLeastKAnimals",phase="Go_to_closest_zoo")
+        stopSign_list= parse_id_list(bus_ordering)
+        step += 1
+        #Step 2:
         
+        display(img)
+        exit_ans = False
+        exit_ans_1 = False
+        exit_ans_2 = ""
+        if(stopSign_list[0] != "N/A"):
+            while(exit_ans):
+                #Get closest stop sign 
+                target_bus = int(parse_int(run.ask(step=step,img=img,question=f"{question_dict['ClosestStopSign']}",question_type="ClosestStopSign",phase="Go_to_closest_zoo")))
+                #Are we at closest stop sign?
+                step += 1
+                while(exit_ans_1):
+                    if(exit_ans_2 == "yes"):
+                        #Yes, sleep for a little bit
+                        time.sleep(3)
+                        step +=1
+                        
+                    else:
+                        #No, driver closer
+                        #We dont have anyway to prevent revisiting zoos at this point
+                        camera.update()
+                        img = camera.read()
+                        display(img)
+                        robot_controls = run.ask(step=step,img=img,question=f"{question_dict['AvoidObstacleToReachClosestBench']}",question_type="AvoidObstacleToReachClosestBench",phase="Go_to_closest_zoo")
+                        robot_controls = parse_action(robot_controls)
+                        bot.send_message(robot_controls)
+                        camera.update()
+                        img = camera.read()
+                        exit_ans_2 = run.ask(step=step,img=img,question=f"{question_dict['ArrivedAtAnimalsAroundStopSigns']}",question_type="ArrivedAtAnimalsAroundStopSigns",phase="Go_to_closest_zoo")
+                        exit_ans_2 = parse_yes_no(exit_ans_2)
+                        step +=1
+                #Are all the animals on the field picked up?
+                camera.update()
+                img = camera.read()
+                display(img)
+                exit_ans = int(parse_int(run.ask(step=step,img=img,question=question_dict["ListStopSignsWithAtLeastKAnimals"],question_type="ListStopSignsWithAtLeastKAnimals",phase="Go_to_closest_zoo"))) != 0
+                step += 1
+            run.log_final(test_name="Zoobus",success=True,reason="N/A")
+    except KeyboardInterrupt:
+            run.log_final(test_name="Zoobus",success=False,reason="Manual Escape")
+
+
