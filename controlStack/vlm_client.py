@@ -68,6 +68,8 @@ class LocalQwenBackend:
                 "Set SPATIAL_VLA_ADAPTER_PATH, pass --adapter-path, or use --no-adapter for the base model."
             )
 
+        import torch
+
         dtype = preferred_torch_dtype()
         from peft import PeftModel
         from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
