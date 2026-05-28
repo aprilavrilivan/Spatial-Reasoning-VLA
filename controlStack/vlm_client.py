@@ -97,6 +97,7 @@ class LocalQwenBackend:
 
     def ask_pil(self, image, question: str) -> dict:
         self.load()
+        import torch
         from PIL import Image
 
         start = time.perf_counter()
