@@ -5,6 +5,7 @@ import time
 import json
 import base64
 import argparse
+from contextlib import nullcontext
 from pathlib import Path
 from io import BytesIO
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -95,13 +96,17 @@ class LocalQwenBackend:
         self.model.eval()
         return self
 
-    def ask_pil(self, image, question: str) -> dict:
+    def ask_pil(self, image, question: str, use_adapter: bool | None = None) -> dict:
         self.load()
         import torch
         from PIL import Image
 
         start = time.perf_counter()
         image = image.convert("RGB")
+        requested_use_adapter = self.use_adapter if use_adapter is None else use_adapter
+        adapter_enabled = bool(self.use_adapter and requested_use_adapter)
+        if requested_use_adapter and not self.use_adapter:
+            raise RuntimeError("Adapter inference was requested, but this backend was started without an adapter.")
 
         prompt = self.build_prompt(question)
         messages = [
@@ -134,7 +139,13 @@ class LocalQwenBackend:
         if self.temperature > 0:
             generation_kwargs["temperature"] = self.temperature
 
-        with torch.no_grad():
+        adapter_context = nullcontext()
+        if self.use_adapter and not requested_use_adapter:
+            if not hasattr(self.model, "disable_adapter"):
+                raise RuntimeError("Loaded adapter model does not support disable_adapter(); cannot run base inference safely.")
+            adapter_context = self.model.disable_adapter()
+
+        with torch.no_grad(), adapter_context:
             output = self.model.generate(**generation_kwargs)
 
         input_len = inputs["input_ids"].shape[1]
@@ -148,6 +159,8 @@ class LocalQwenBackend:
             "raw_answer": raw,
             "answer": answer,
             "latency_sec": end - start,
+            "use_adapter": adapter_enabled,
+            "model_mode": "adapter" if adapter_enabled else "base",
         }
 
     def ask(self, frame_bgr, question: str) -> dict:
@@ -173,6 +186,7 @@ class QwenVLMClient:
         use_remote: bool | None = None,
     ):
         self.use_remote = use_remote_by_default() if use_remote is None else use_remote
+        self.use_adapter = use_adapter
         self.remote_url = remote_url or os.environ.get("SPATIAL_VLA_REMOTE_URL", DEFAULT_REMOTE_URL)
         self.remote_timeout_sec = remote_timeout_sec or float(
             os.environ.get("SPATIAL_VLA_REMOTE_TIMEOUT_SEC", str(DEFAULT_REMOTE_TIMEOUT_SEC))
@@ -210,6 +224,7 @@ class QwenVLMClient:
         payload = {
             "question": question,
             "image_jpeg_b64": base64.b64encode(encoded.tobytes()).decode("ascii"),
+            "use_adapter": self.use_adapter,
         }
         data = json.dumps(payload).encode("utf-8")
         req = request.Request(
@@ -248,7 +263,10 @@ class RemoteQwenServer:
 
         image_bytes = base64.b64decode(image_b64)
         image = Image.open(BytesIO(image_bytes)).convert("RGB")
-        return self.backend.ask_pil(image, question)
+        use_adapter = payload.get("use_adapter")
+        if use_adapter is not None:
+            use_adapter = bool(use_adapter)
+        return self.backend.ask_pil(image, question, use_adapter=use_adapter)
 
 
 def make_handler(server_state: RemoteQwenServer):
