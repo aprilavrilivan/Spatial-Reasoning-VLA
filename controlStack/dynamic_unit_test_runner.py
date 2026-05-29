@@ -94,6 +94,12 @@ class DynamicUnitTestRunner:
     def right_command(self) -> str:
         return f"r,{TURN_SPEED},{self.turn_deg}"
 
+    def obstacle_left_command(self) -> str:
+        return f"l,{TURN_SPEED},{int(round(self.turn_deg * 1.5))}"
+
+    def obstacle_right_command(self) -> str:
+        return f"r,{TURN_SPEED},{int(round(self.turn_deg * 1.5))}"
+
     def send_commands(self, commands: list[str], test_name: str, trial: int, step: int, phase: str):
         sent = bool(self.execute_actions and commands)
         if self.robot is not None and sent:
@@ -448,9 +454,9 @@ class DynamicUnitTestRunner:
         if action == "keep straight":
             return [self.forward_command()]
         if action == "turn left":
-            return [self.left_command(), self.forward_command()]
+            return [self.obstacle_left_command(), self.forward_command()]
         if action == "turn right":
-            return [self.right_command(), self.forward_command()]
+            return [self.obstacle_right_command(), self.forward_command()]
         return []
 
     def required_target_id(self, target_kind: str, args) -> int:
