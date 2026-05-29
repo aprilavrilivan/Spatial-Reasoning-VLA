@@ -143,6 +143,8 @@ class DynamicUnitTestRunner:
             raw_answer=result["raw_answer"],
             answer=result["answer"],
             parsed_answer=parsed,
+            model_mode=result.get("model_mode"),
+            use_adapter=result.get("use_adapter"),
             latency_sec=result["latency_sec"],
         )
         return parsed
