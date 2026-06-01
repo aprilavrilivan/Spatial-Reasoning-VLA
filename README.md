@@ -27,6 +27,16 @@ python gui.py
 
 Hardware defaults are documented in `controlStack/README.md`. The working camera and Bluetooth settings are intentionally left unchanged.
 
-The deployment computer is expected to run inference locally on an NVIDIA RTX 3090. The Qwen inference wrapper therefore defaults to CUDA fp16. To override this manually, set `SPATIAL_VLA_DTYPE=bf16` or `SPATIAL_VLA_DTYPE=fp16` before launching a script.
+By default, VLM inference is served by a remote Qwen3-VL endpoint:
 
-By default, the runners load `Qwen/Qwen3-VL-4B-Instruct` plus the local LoRA adapter at `controlStack/best_checkpoint`. Use `--adapter-path /path/to/best_checkpoint` to switch fine-tuned adapters, or `--no-adapter --run-label base_qwen` to evaluate the base model before fine-tuning.
+```bash
+https://referenced-ram-weddings-there.trycloudflare.com/ask
+```
+
+The deployment scripts send the captured camera frame and question to that endpoint, then use the returned short answer to control the robot. To point the code at a different remote server, set:
+
+```bash
+export SPATIAL_VLA_REMOTE_URL=https://your-server.example.com/ask
+```
+
+Use `--no-adapter --run-label base_qwen` to evaluate the base model before fine-tuning. Use `--adapter-path /path/to/best_checkpoint` to switch fine-tuned adapters when running a local server. To force fully local inference on a CUDA machine, set `SPATIAL_VLA_USE_REMOTE=0`; the local path loads `Qwen/Qwen3-VL-4B-Instruct` plus the LoRA adapter at `controlStack/best_checkpoint`.

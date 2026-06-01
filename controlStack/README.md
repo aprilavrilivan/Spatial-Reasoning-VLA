@@ -3,7 +3,7 @@
 This folder now separates the real-robot deployment code into small scripts:
 
 - `camera_stream.py`: webcam capture wrapper.
-- `vlm_client.py`: Qwen3-VL + Zoo-Bus-VQA LoRA inference.
+- `vlm_client.py`: Qwen3-VL + Zoo-Bus-VQA LoRA inference, using the remote server by default.
 - `BluetoothBot.py`: Bluetooth serial transport to the Pololu robot.
 - `robot_actions.py`: converts VLM action labels to robot commands.
 - `unit_test_runner.py`: repeatable unit tests for individual question types.
@@ -13,7 +13,19 @@ This folder now separates the real-robot deployment code into small scripts:
 - `gui.py`: lightweight selector UI for unit tests.
 - `FSM.py` / `LowLevelFSM.py`: high-level task state and low-level geometry helpers.
 
-The deployment host runs inference locally on an RTX 3090, so `vlm_client.py` defaults to CUDA fp16. Set `SPATIAL_VLA_DTYPE=bf16` only if you intentionally move to hardware where bf16 is preferred.
+The deployment host uses remote Qwen inference by default. The active endpoint is:
+
+```bash
+https://referenced-ram-weddings-there.trycloudflare.com/ask
+```
+
+Override it with:
+
+```bash
+export SPATIAL_VLA_REMOTE_URL=https://your-server.example.com/ask
+```
+
+If you intentionally want local inference on a CUDA workstation, set `SPATIAL_VLA_USE_REMOTE=0`. The local path defaults to CUDA fp16; set `SPATIAL_VLA_DTYPE=bf16` or `SPATIAL_VLA_DTYPE=fp16` to override it manually.
 
 The working hardware defaults are intentionally unchanged:
 
