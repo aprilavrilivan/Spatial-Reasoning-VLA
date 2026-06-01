@@ -135,7 +135,7 @@ uv run dynamic_unit_test_runner.py \
   --test face_arrive_bench \
   --bench-number 2 \
   --trials 3 \
-  --command-pause-sec 1.0
+  --command-pause-sec 1.0 \
   --execute-actions
 ```
 
@@ -339,6 +339,113 @@ python dynamic_unit_test_runner.py \
   --trials 10 \
   --execute-actions
 ```
+
+## Complex Navigation Scene
+
+The full complex navigation task is implemented in `controlStack/zooBus.py`. It
+is not a repeated unit test. It runs one longer Zoo-Bus story:
+
+1. Count whether any people remain in the scene.
+2. Visit the nearest occupied bench, using ordered bench IDs plus per-bench
+   people counts instead of directly relying on `ClosestBenchWithPerson`.
+3. Navigate to that bench with obstacle-aware actions.
+4. After arrival, manually remove the people at that bench, then continue.
+5. Once all people have been picked up, visit stop signs with animals.
+6. Stop signs are selected from the remaining unvisited candidates and reached
+   with obstacle-aware navigation.
+
+Dry-run the complex task without sending Bluetooth commands:
+
+```bash
+python zooBus.py \
+  --camera-id 0 \
+  --max-pickups 8 \
+  --max-stop-visits 6
+```
+
+Run the full real-robot complex task with the fine-tuned Qwen adapter:
+
+```bash
+python zooBus.py \
+  --camera-id 0 \
+  --max-pickups 8 \
+  --max-stop-visits 6 \
+  --command-pause-sec 2.0 \
+  --execute-actions
+```
+
+During the pickup phase, the default behavior is to pause after the robot reaches
+an occupied bench and wait for the operator to remove the people manually. Press
+Enter after the people have been removed. If you want the script to continue
+automatically after a fixed pause, use:
+
+```bash
+python zooBus.py \
+  --camera-id 0 \
+  --max-pickups 8 \
+  --max-stop-visits 6 \
+  --pickup-pause-sec 5.0 \
+  --auto-continue \
+  --execute-actions
+```
+
+Run the same complex task with the base Qwen model before fine-tuning:
+
+```bash
+python zooBus.py \
+  --camera-id 0 \
+  --max-pickups 8 \
+  --max-stop-visits 6 \
+  --no-adapter \
+  --run-label base_qwen \
+  --execute-actions
+```
+
+Run with a specific fine-tuned adapter checkpoint:
+
+```bash
+python zooBus.py \
+  --camera-id 0 \
+  --adapter-path /path/to/best_checkpoint \
+  --run-label finetuned_qwen \
+  --max-pickups 8 \
+  --max-stop-visits 6 \
+  --execute-actions
+```
+
+Useful complex-task flags:
+
+```bash
+--camera-id 0
+--output-dir real_robot_results/complex_navigation
+--execute-actions
+--no-adapter
+--adapter-path /path/to/best_checkpoint
+--run-label finetuned_qwen
+--max-pickups 8
+--max-stop-visits 6
+--max-steps 20
+--max-turn-steps 18
+--step-cm 5
+--turn-deg 10
+--command-pause-sec 2.0
+--pickup-pause-sec 0.0
+--stop-visit-pause-sec 2.0
+--parse-retries 1
+--auto-continue
+--no-display
+--no-manual-label
+```
+
+Complex-task logs are written under:
+
+```text
+real_robot_results/complex_navigation/
+```
+
+The key records are again `results.csv`, `results.json`, and the saved query
+images. The final row for `zoo_bus_pickup_and_tour` records whether the whole
+pickup-and-tour story completed successfully.
 
 ## Logging And Table Construction
 
