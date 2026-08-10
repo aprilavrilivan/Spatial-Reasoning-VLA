@@ -87,6 +87,20 @@ ARRIVED_DIST_MAX      = 190    # max pre-resize edge-to-edge gap (px)
 ARRIVED_MAX_TRIES     = 60     # attempts before falling back to random placement
 ARRIVED_JITTER        = 60     # ±px jitter along the axis parallel to the chosen side
 
+# Obstacle-focused placement: disabled by default. When enabled for an augmentation
+# bucket, try to place the bus so that a non-target object lies on the path to a
+# bench/stop-sign target, increasing stable turn-left/turn-right cases.
+OBSTACLE_PLACEMENT_PROB = 0.0
+OBSTACLE_TARGET_MODE = "any"  # any, bench, stop, closest_bench, closest_stop
+OBSTACLE_REQUIRE_PLACEMENT = False
+OBSTACLE_MAX_TRIES = 80
+OBSTACLE_LATERAL_MIN = 30.0
+OBSTACLE_LATERAL_MAX = 90.0
+OBSTACLE_EXTRA_MIN = 100.0
+OBSTACLE_EXTRA_MAX = 240.0
+OBSTACLE_MIN_ANGLE_DEG = 12.0
+OBSTACLE_MAX_ANGLE_DEG = 40.0
+
 # Heading dot (red circle drawn in front of the bus)
 BUS_HEADING_DOT_OFFSET = 215
 BUS_HEADING_DOT_RADIUS = 45
@@ -165,6 +179,119 @@ def _union_bbox(bboxes: List[Tuple[int,int,int,int]]) -> Tuple[int,int,int,int]:
     x1 = max(b[2] for b in bboxes)
     y1 = max(b[3] for b in bboxes)
     return (x0, y0, x1, y1)
+
+
+def _bbox_centroid(bbox: Tuple[int,int,int,int]) -> Tuple[float, float]:
+    x0, y0, x1, y1 = bbox
+    return ((x0 + x1) / 2.0, (y0 + y1) / 2.0)
+
+
+def _expand_bbox(
+    bbox: Tuple[int,int,int,int],
+    margin: float,
+) -> Tuple[float, float, float, float]:
+    x0, y0, x1, y1 = map(float, bbox)
+    return (x0 - margin, y0 - margin, x1 + margin, y1 + margin)
+
+
+def _segment_box_entry_t(
+    p0: Tuple[float, float],
+    p1: Tuple[float, float],
+    bbox: Tuple[float, float, float, float],
+) -> Optional[float]:
+    """Return the entry t in [0,1] where segment p0->p1 enters bbox, else None."""
+    x_min, y_min, x_max, y_max = bbox
+    x0, y0 = p0
+    x1, y1 = p1
+    dx = x1 - x0
+    dy = y1 - y0
+    t_min = 0.0
+    t_max = 1.0
+
+    if dx == 0.0:
+        if x0 < x_min or x0 > x_max:
+            return None
+    else:
+        t1 = (x_min - x0) / dx
+        t2 = (x_max - x0) / dx
+        t_near = min(t1, t2)
+        t_far = max(t1, t2)
+        t_min = max(t_min, t_near)
+        t_max = min(t_max, t_far)
+        if t_max < t_min:
+            return None
+
+    if dy == 0.0:
+        if y0 < y_min or y0 > y_max:
+            return None
+    else:
+        t1 = (y_min - y0) / dy
+        t2 = (y_max - y0) / dy
+        t_near = min(t1, t2)
+        t_far = max(t1, t2)
+        t_min = max(t_min, t_near)
+        t_max = min(t_max, t_far)
+        if t_max < t_min:
+            return None
+
+    return t_min
+
+
+def _path_intersects_obstacle(
+    bus_bbox: Tuple[int,int,int,int],
+    target_bbox: Tuple[int,int,int,int],
+    obstacle_bbox: Tuple[int,int,int,int],
+    margin: float,
+) -> bool:
+    bus_c = _bbox_centroid(bus_bbox)
+    target_c = _bbox_centroid(target_bbox)
+    expanded = _expand_bbox(obstacle_bbox, margin)
+    t = _segment_box_entry_t(bus_c, target_c, expanded)
+    return t is not None and 0.0 <= t <= 1.0
+
+
+def _obstacle_angle_is_stable(
+    bus_bbox: Tuple[int,int,int,int],
+    target_bbox: Tuple[int,int,int,int],
+    obstacle_bbox: Tuple[int,int,int,int],
+) -> bool:
+    bus_c = _bbox_centroid(bus_bbox)
+    tgt_c = _bbox_centroid(target_bbox)
+    obs_c = _bbox_centroid(obstacle_bbox)
+    heading = (tgt_c[0] - bus_c[0], tgt_c[1] - bus_c[1])
+    obstacle_vec = (obs_c[0] - bus_c[0], obs_c[1] - bus_c[1])
+    heading_norm = math.hypot(*heading)
+    obstacle_norm = math.hypot(*obstacle_vec)
+    if heading_norm == 0.0 or obstacle_norm == 0.0:
+        return False
+    cos_theta = (
+        heading[0] * obstacle_vec[0] + heading[1] * obstacle_vec[1]
+    ) / (heading_norm * obstacle_norm)
+    cos_theta = max(-1.0, min(1.0, cos_theta))
+    theta_deg = abs(math.degrees(math.acos(cos_theta)))
+    return OBSTACLE_MIN_ANGLE_DEG <= theta_deg <= OBSTACLE_MAX_ANGLE_DEG
+
+
+def _target_is_stably_closest(
+    bus_bbox: Tuple[int,int,int,int],
+    target_bbox: Tuple[int,int,int,int],
+    candidates: List[Tuple[int,int,int,int]],
+    margin: float = 80.0,
+) -> bool:
+    """Return True when target_bbox is the nearest candidate to the bus by a clear margin."""
+    if not candidates:
+        return False
+    bus_c = _bbox_centroid(bus_bbox)
+    target_c = _bbox_centroid(target_bbox)
+    target_dist = math.hypot(target_c[0] - bus_c[0], target_c[1] - bus_c[1])
+    for other in candidates:
+        if other == target_bbox:
+            continue
+        other_c = _bbox_centroid(other)
+        other_dist = math.hypot(other_c[0] - bus_c[0], other_c[1] - bus_c[1])
+        if other_dist - target_dist <= margin:
+            return False
+    return True
 
 
 def _any_sprite_overlap(
@@ -720,6 +847,8 @@ def add_bus_variants_for_one_scene(
         variant_img: Optional[Image.Image] = None
         all_animal_entries: List[Tuple[str,int,int,int,int]] = []
         all_people_bboxes: List[Tuple[int,int,int,int]] = []
+        stop_animals_by_stop: List[List[Tuple[str,int,int,int,int]]] = []
+        bench_people_by_bench: List[List[Tuple[int,int,int,int]]] = []
 
         for _ in range(MAX_VARIANT_TRIES):
             cur = base_no_person.copy()
@@ -759,6 +888,8 @@ def add_bus_variants_for_one_scene(
                 variant_img        = cur
                 all_animal_entries = _all_animals
                 all_people_bboxes  = _all_people
+                stop_animals_by_stop = _stop_animals
+                bench_people_by_bench = _bench_people
                 break
 
         if variant_img is None:
@@ -777,6 +908,11 @@ def add_bus_variants_for_one_scene(
         placed = False
         cx = cy = 0.0
 
+        def _normalized_bus_bbox(px: int, py: int) -> Tuple[int, int, Tuple[int,int,int,int]]:
+            px = max(MARGIN, min(W - MARGIN - ow, px))
+            py = max(MARGIN, min(H - MARGIN - oh, py))
+            return px, py, (px, py, px + ow, py + oh)
+
         def _try_place(
             px: int,
             py: int,
@@ -785,9 +921,7 @@ def add_bus_variants_for_one_scene(
         ) -> bool:
             """Return True and commit placement if (px, py) is a valid bus top-left."""
             nonlocal cx, cy, placed
-            px = max(MARGIN, min(W - MARGIN - ow, px))
-            py = max(MARGIN, min(H - MARGIN - oh, py))
-            bus_bbox = (px, py, px + ow, py + oh)
+            px, py, bus_bbox = _normalized_bus_bbox(px, py)
             if target_bbox is not None and target_max_gap is not None:
                 if _bbox_edge_dist(bus_bbox, target_bbox) > target_max_gap:
                     return False
@@ -832,6 +966,86 @@ def add_bus_variants_for_one_scene(
                     bx = t_cx - ow // 2 + j
                 if _try_place(bx, by, target_bbox=target, target_max_gap=ARRIVED_DIST_MAX):
                     break
+
+        obstacle_placement_required = False
+        if not placed and OBSTACLE_PLACEMENT_PROB > 0.0 and random.random() < OBSTACLE_PLACEMENT_PROB:
+            obstacle_placement_required = bool(OBSTACLE_REQUIRE_PLACEMENT)
+            target_mode = str(OBSTACLE_TARGET_MODE)
+            obstacle_specs: List[Tuple[str, Tuple[int,int,int,int], List[Tuple[int,int,int,int]]]] = []
+
+            if target_mode in {"any", "bench", "closest_bench"}:
+                for bench_idx, bench_bbox in enumerate(bench_bboxes):
+                    obstacles: List[Tuple[int,int,int,int]] = []
+                    if target_mode != "closest_bench":
+                        obstacles.extend(b for i, b in enumerate(bench_bboxes) if i != bench_idx)
+                    obstacles.extend(b for i, people in enumerate(bench_people_by_bench) if i != bench_idx for b in people)
+                    obstacles.extend(stop_bboxes)
+                    for animal_group in stop_animals_by_stop:
+                        obstacles.extend((x0, y0, x1, y1) for _, x0, y0, x1, y1 in animal_group)
+                    if obstacles:
+                        obstacle_specs.append(("bench", bench_bbox, obstacles))
+
+            if target_mode in {"any", "stop", "closest_stop"}:
+                for stop_idx, stop_bbox in enumerate(stop_bboxes):
+                    obstacles = []
+                    obstacles.extend(bench_bboxes)
+                    obstacles.extend(all_people_bboxes)
+                    if target_mode != "closest_stop":
+                        obstacles.extend(b for i, b in enumerate(stop_bboxes) if i != stop_idx)
+                    for i, animal_group in enumerate(stop_animals_by_stop):
+                        if i == stop_idx:
+                            continue
+                        obstacles.extend((x0, y0, x1, y1) for _, x0, y0, x1, y1 in animal_group)
+                    if obstacles:
+                        obstacle_specs.append(("stop", stop_bbox, obstacles))
+
+            bus_margin = max(ow / 2.0, oh / 2.0)
+            for _ in range(OBSTACLE_MAX_TRIES):
+                if not obstacle_specs:
+                    break
+                target_kind, target_bbox, blockers = random.choice(obstacle_specs)
+                blocker_bbox = random.choice(blockers)
+
+                tx, ty = _bbox_centroid(target_bbox)
+                bx, by = _bbox_centroid(blocker_bbox)
+                vx = bx - tx
+                vy = by - ty
+                base_dist = math.hypot(vx, vy)
+                if base_dist < 20.0:
+                    continue
+                ux = vx / base_dist
+                uy = vy / base_dist
+                px = -uy
+                py = ux
+
+                extra = random.uniform(OBSTACLE_EXTRA_MIN, OBSTACLE_EXTRA_MAX)
+                lateral = random.choice((-1.0, 1.0)) * random.uniform(OBSTACLE_LATERAL_MIN, OBSTACLE_LATERAL_MAX)
+                bus_cx = tx + ux * (base_dist + extra) + px * lateral
+                bus_cy = ty + uy * (base_dist + extra) + py * lateral
+                cand_x = int(round(bus_cx - ow / 2.0))
+                cand_y = int(round(bus_cy - oh / 2.0))
+                norm_x, norm_y, cand_bus_bbox = _normalized_bus_bbox(cand_x, cand_y)
+
+                if not _path_intersects_obstacle(cand_bus_bbox, target_bbox, blocker_bbox, bus_margin):
+                    continue
+                if not _obstacle_angle_is_stable(cand_bus_bbox, target_bbox, blocker_bbox):
+                    continue
+                if target_mode == "closest_bench" and (
+                    target_kind != "bench"
+                    or not _target_is_stably_closest(cand_bus_bbox, target_bbox, bench_bboxes)
+                ):
+                    continue
+                if target_mode == "closest_stop" and (
+                    target_kind != "stop"
+                    or not _target_is_stably_closest(cand_bus_bbox, target_bbox, stop_bboxes)
+                ):
+                    continue
+                if _try_place(norm_x, norm_y):
+                    break
+
+        if not placed and obstacle_placement_required:
+            print(f"[warn] {stem} variant {k}: no required obstacle placement found, skipping")
+            continue
 
         if not placed:
             # Fall back to random blank-region placement

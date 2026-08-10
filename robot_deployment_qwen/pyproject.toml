@@ -1,0 +1,16 @@
+[project]
+name = "spatial-reasoning-vla"
+version = "0.1.0"
+description = "Closed-loop spatial reasoning VLM deployment for a Pololu 3pi+ robot"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "accelerate>=1.13.0",
+    "opencv-python>=4.13.0.92",
+    "peft>=0.19.1",
+    "pillow>=12.2.0",
+    "pyserial>=3.5",
+    "torch>=2.12.0",
+    "torchvision>=0.27.0",
+    "transformers>=4.57.0",
+]

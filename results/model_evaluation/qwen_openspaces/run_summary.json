@@ -1,0 +1,85 @@
+{
+  "model": "Qwen/Qwen3-VL-4B-Instruct",
+  "dataset": "remyxai/OpenSpaces",
+  "method": "OpenSpaces bf16 LoRA-SFT",
+  "lora_r": 32,
+  "lora_alpha": 64,
+  "lora_dropout": 0.05,
+  "lr": 5e-06,
+  "max_grad_norm": 0.3,
+  "warmup_steps": 300,
+  "epochs": 3,
+  "max_steps": 2949,
+  "per_device_train_batch_size": 16,
+  "gradient_accumulation_steps": 4,
+  "effective_batch_size": 64,
+  "max_seq_length": 2048,
+  "max_new_tokens_eval": 64,
+  "image_min_pixels": 200704,
+  "image_max_pixels": 602112,
+  "prompt_style": "OpenSpaces raw question text",
+  "eval_steps": 300,
+  "save_steps": 300,
+  "selection_metric": "OpenSpaces eval overall accuracy",
+  "estimated_steps_per_epoch": 651,
+  "estimated_total_steps": 2949,
+  "dataset_summary": {
+    "train": {
+      "num_qa_pairs": 41645,
+      "num_source_rows": 8329,
+      "question_type_counts": {
+        "DistanceSpatial": 6241,
+        "GeneralSpatial": 1641,
+        "ObjectSelection": 326,
+        "RelativePosition": 4706,
+        "SizeSpatial": 7304,
+        "YesNoSpatial": 21427
+      },
+      "answer_type_counts": {
+        "directional": 14403,
+        "long_phrase": 10370,
+        "numeric": 14895,
+        "short_phrase": 1333,
+        "yes_no": 644
+      }
+    },
+    "evaluation": {
+      "num_qa_pairs": 1024,
+      "num_source_rows": 205,
+      "question_type_counts": {
+        "DistanceSpatial": 142,
+        "GeneralSpatial": 46,
+        "ObjectSelection": 8,
+        "RelativePosition": 135,
+        "SizeSpatial": 154,
+        "YesNoSpatial": 539
+      },
+      "answer_type_counts": {
+        "directional": 385,
+        "long_phrase": 228,
+        "numeric": 348,
+        "short_phrase": 43,
+        "yes_no": 20
+      }
+    },
+    "test": {
+      "num_qa_pairs": 1024,
+      "num_source_rows": 205,
+      "question_type_counts": {
+        "DistanceSpatial": 152,
+        "GeneralSpatial": 40,
+        "ObjectSelection": 8,
+        "RelativePosition": 120,
+        "SizeSpatial": 172,
+        "YesNoSpatial": 532
+      },
+      "answer_type_counts": {
+        "directional": 338,
+        "long_phrase": 259,
+        "numeric": 383,
+        "short_phrase": 33,
+        "yes_no": 11
+      }
+    }
+  }
+}

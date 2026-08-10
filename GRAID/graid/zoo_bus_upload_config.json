@@ -2,10 +2,10 @@
   "dataset_name": "zoo_bus",
   "split": "train",
 
-  "image_root": "/Users/xuyifan/Documents/Spatial-VLA/SceneGen/images/output",
+  "image_root": "../../scene_gen/output",
   "save_path": "./datasets/zoo_bus_vqa",
   "upload_to_hub": true,
-  "hub_private": true,
+  "hub_private": false,
   "hub_repo_id": "aprilavrilivan/zoo-bus-vqa",
   "hub_token_env": "HF_TOKEN",
   "hub_max_shard_size": "5GB",
@@ -17,7 +17,7 @@
   "models": [
     {
       "backend": "ultralytics",
-      "model_path": "./yolo12s.pt",
+      "model_path": "../../scene_gen/yolo12s.pt",
       "confidence_threshold": 0.2
     }
   ],

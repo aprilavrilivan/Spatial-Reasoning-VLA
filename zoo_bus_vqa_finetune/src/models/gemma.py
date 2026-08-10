@@ -18,7 +18,7 @@ from transformers import (
 
 from src.data import build_messages
 from src.metrics import normalize_answer, split_seen_unseen_metrics
-from src.utils import write_json
+from src.utils import use_left_padding, write_json
 
 
 DEFAULT_MODEL = "google/gemma-3-4b-it"
@@ -35,7 +35,7 @@ GEMMA_LORA_TARGET_MODULES = [
 
 
 def load_gemma_processor(model_name: str):
-    return AutoProcessor.from_pretrained(model_name)
+    return use_left_padding(AutoProcessor.from_pretrained(model_name))
 
 
 def build_gemma_lora_config(lora_r: int, lora_alpha: int, lora_dropout: float) -> LoraConfig:
@@ -63,6 +63,54 @@ def load_gemma_lora_model(model_name: str, lora_r: int, lora_alpha: int, lora_dr
     return get_peft_model(model, lora_config)
 
 
+def _cast_floating_tensors_to_bf16(batch: Dict[str, Any]) -> Dict[str, Any]:
+    for key, value in list(batch.items()):
+        if isinstance(value, torch.Tensor) and torch.is_floating_point(value):
+            batch[key] = value.to(dtype=torch.bfloat16)
+    return batch
+
+
+def _move_batch_to_device(batch: Dict[str, Any], device: torch.device) -> Dict[str, Any]:
+    moved: Dict[str, Any] = {}
+    for key, value in batch.items():
+        if isinstance(value, torch.Tensor):
+            if torch.is_floating_point(value):
+                moved[key] = value.to(device=device, dtype=torch.bfloat16)
+            else:
+                moved[key] = value.to(device=device)
+        else:
+            moved[key] = value
+    return moved
+
+
+def _mask_prompt_tokens_by_length(
+    processor: Any,
+    prompt_texts: List[str],
+    images: List[List[Image.Image]],
+    labels: torch.Tensor,
+    attention_mask: torch.Tensor | None,
+    max_seq_length: int,
+) -> torch.Tensor:
+    prompt_batch = processor(
+        text=prompt_texts,
+        images=images,
+        padding=True,
+        truncation=True,
+        max_length=max_seq_length,
+        return_tensors="pt",
+    )
+    prompt_lengths = prompt_batch["attention_mask"].sum(dim=1).tolist()
+    padding_side = getattr(processor.tokenizer, "padding_side", "right")
+    for row_idx, prompt_len in enumerate(prompt_lengths):
+        if padding_side == "left" and attention_mask is not None:
+            full_len = int(attention_mask[row_idx].sum().item())
+            prompt_start = max(labels.shape[1] - full_len, 0)
+            labels[row_idx, prompt_start : prompt_start + int(prompt_len)] = -100
+        else:
+            labels[row_idx, : int(prompt_len)] = -100
+    return labels
+
+
 @dataclass
 class GemmaVQATrainCollator:
     processor: Any
@@ -70,6 +118,7 @@ class GemmaVQATrainCollator:
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, torch.Tensor]:
         texts: List[str] = []
+        prompt_texts: List[str] = []
         images: List[List[Image.Image]] = []
 
         for feature in features:
@@ -80,6 +129,13 @@ class GemmaVQATrainCollator:
                 add_generation_prompt=False,
             )
             texts.append(text)
+            prompt_messages = build_messages(feature["question"], answer=None)
+            prompt_text = self.processor.apply_chat_template(
+                prompt_messages,
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+            prompt_texts.append(prompt_text)
             images.append([feature["image"]])
 
         batch = self.processor(
@@ -92,12 +148,22 @@ class GemmaVQATrainCollator:
         )
 
         labels = batch["input_ids"].clone()
+        labels = _mask_prompt_tokens_by_length(
+            self.processor,
+            prompt_texts,
+            images,
+            labels,
+            batch.get("attention_mask"),
+            self.max_seq_length,
+        )
         pad_token_id = self.processor.tokenizer.pad_token_id
         if pad_token_id is not None:
             labels[labels == pad_token_id] = -100
+        if "attention_mask" in batch:
+            labels[batch["attention_mask"] == 0] = -100
 
         batch["labels"] = labels
-        return batch
+        return _cast_floating_tensors_to_bf16(dict(batch))
 
 
 def generate_predictions(
@@ -138,7 +204,7 @@ def generate_predictions(
             max_length=max_seq_length,
             return_tensors="pt",
         )
-        model_inputs = {key: value.to(device) for key, value in model_inputs.items()}
+        model_inputs = _move_batch_to_device(dict(model_inputs), device)
 
         with torch.no_grad():
             generated = model.generate(
@@ -148,9 +214,15 @@ def generate_predictions(
                 use_cache=True,
             )
 
-        prompt_len = model_inputs["input_ids"].shape[1]
-        generated_only = generated[:, prompt_len:]
-        pred_texts = processor.batch_decode(generated_only, skip_special_tokens=True)
+        generated_only = [
+            out_ids[len(in_ids) :]
+            for in_ids, out_ids in zip(model_inputs["input_ids"], generated)
+        ]
+        pred_texts = processor.batch_decode(
+            generated_only,
+            skip_special_tokens=True,
+            clean_up_tokenization_spaces=False,
+        )
 
         for item, prediction in zip(batch_items, pred_texts):
             gold = str(item["answer"])
@@ -195,6 +267,8 @@ class GenerationEvalCallback(TrainerCallback):
         self.train_type_counts = train_type_counts
         self.best_metric = -1.0
         self.best_step = None
+        self.before_finetune_eval_payload: Dict[str, Any] | None = None
+        self.before_finetune_test_payload: Dict[str, Any] | None = None
         self.best_dir = self.output_dir / "best_checkpoint_eval_predictions"
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -204,6 +278,10 @@ class GenerationEvalCallback(TrainerCallback):
         split_name: str,
         dataset: Dataset,
         global_step: int,
+        *,
+        file_stem: str | None = None,
+        log_prefix: str | None = None,
+        phase: str = "after_finetune",
     ) -> Dict[str, Any]:
         rows = generate_predictions(
             model=trainer.model,
@@ -218,32 +296,74 @@ class GenerationEvalCallback(TrainerCallback):
 
         pred_dir = self.output_dir / f"{split_name}_predictions"
         pred_dir.mkdir(parents=True, exist_ok=True)
-        pred_path = pred_dir / f"step_{global_step}.csv"
+        resolved_file_stem = file_stem or f"step_{global_step}"
+        resolved_log_prefix = log_prefix or split_name
+        pred_path = pred_dir / f"{resolved_file_stem}.csv"
         pd.DataFrame(rows).to_csv(pred_path, index=False)
 
         metrics_payload = {
             "global_step": global_step,
             "split": split_name,
+            "phase": phase,
             "overall_accuracy": metrics["overall_accuracy"],
             "seen_type_accuracy": metrics["seen_type_accuracy"],
             "unseen_type_accuracy": metrics["unseen_type_accuracy"],
             "per_type_accuracy": metrics["per_type_accuracy"],
             "train_count_per_question_type": self.train_type_counts,
             "predictions_csv": str(pred_path),
+            "predictions_json": str(pred_dir / f"{resolved_file_stem}.json"),
         }
-        write_json(pred_dir / f"step_{global_step}.json", metrics_payload)
+        write_json(pred_dir / f"{resolved_file_stem}.json", metrics_payload)
 
-        trainer.log(
-            {
-                f"{split_name}_overall_accuracy": metrics["overall_accuracy"],
-                f"{split_name}_seen_type_accuracy": metrics["seen_type_accuracy"],
-                f"{split_name}_unseen_type_accuracy": metrics["unseen_type_accuracy"],
-            }
-        )
+        grouped_prefix = "eval" if split_name == "eval" else "test"
+        log_payload = {
+            f"{grouped_prefix}/overall_accuracy": metrics["overall_accuracy"],
+            f"{grouped_prefix}/seen_type_accuracy": metrics["seen_type_accuracy"],
+            f"{grouped_prefix}/unseen_type_accuracy": metrics["unseen_type_accuracy"],
+        }
+        # Keep only the flat after-finetune metric names needed by Trainer's
+        # best-checkpoint selection; baseline metrics share the grouped keys.
+        if phase != "before_finetune":
+            log_payload.update(
+                {
+                    f"{resolved_log_prefix}_overall_accuracy": metrics["overall_accuracy"],
+                    f"{resolved_log_prefix}_seen_type_accuracy": metrics["seen_type_accuracy"],
+                    f"{resolved_log_prefix}_unseen_type_accuracy": metrics["unseen_type_accuracy"],
+                }
+            )
         for question_type, value in metrics["per_type_accuracy"].items():
-            trainer.log({f"{split_name}_per_type/{question_type}": value})
+            log_payload[f"{grouped_prefix}/per_type/{question_type}"] = value
+        trainer.log(log_payload)
 
         return metrics_payload
+
+    def run_pre_finetune_baseline(self, trainer: Trainer) -> Dict[str, Any]:
+        global_step = int(trainer.state.global_step)
+        self.before_finetune_eval_payload = self._run_eval(
+            trainer,
+            "eval",
+            self.eval_dataset,
+            global_step,
+            file_stem=f"before_finetune_step_{global_step}",
+            log_prefix="before_finetune_eval",
+            phase="before_finetune",
+        )
+        self.before_finetune_test_payload = self._run_eval(
+            trainer,
+            "test",
+            self.test_dataset,
+            global_step,
+            file_stem=f"before_finetune_step_{global_step}",
+            log_prefix="before_finetune_test",
+            phase="before_finetune",
+        )
+        baseline_report = {
+            "before_finetune_eval": self.before_finetune_eval_payload,
+            "before_finetune_test": self.before_finetune_test_payload,
+            "train_count_per_question_type": self.train_type_counts,
+        }
+        write_json(self.output_dir / "before_finetune_report.json", baseline_report)
+        return baseline_report
 
     def on_evaluate(self, args, state, control, **kwargs):
         trainer: Trainer = kwargs["model"]._hf_peft_trainer_ref
@@ -261,6 +381,7 @@ class GenerationEvalCallback(TrainerCallback):
             self.best_metric = metric
             self.best_step = global_step
             self.best_dir.mkdir(parents=True, exist_ok=True)
+            payload["best_checkpoint_path"] = str(Path(trainer.args.output_dir) / f"checkpoint-{global_step}")
             write_json(self.best_dir / "best_eval_metrics.json", payload)
 
     def run_final_test(self, trainer: Trainer) -> Dict[str, Any]:
@@ -270,7 +391,34 @@ class GenerationEvalCallback(TrainerCallback):
             self.test_dataset,
             int(trainer.state.global_step),
         )
+        best_model_checkpoint = trainer.state.best_model_checkpoint
         final_report = {
+            "before_finetune": self.before_finetune_test_payload,
+            "after_finetune": payload,
+            "before_finetune_seen_type_test_accuracy": (
+                self.before_finetune_test_payload["seen_type_accuracy"]
+                if self.before_finetune_test_payload is not None
+                else None
+            ),
+            "before_finetune_unseen_type_test_accuracy": (
+                self.before_finetune_test_payload["unseen_type_accuracy"]
+                if self.before_finetune_test_payload is not None
+                else None
+            ),
+            "before_finetune_overall_test_accuracy": (
+                self.before_finetune_test_payload["overall_accuracy"]
+                if self.before_finetune_test_payload is not None
+                else None
+            ),
+            "before_finetune_per_question_type_test_accuracy": (
+                self.before_finetune_test_payload["per_type_accuracy"]
+                if self.before_finetune_test_payload is not None
+                else None
+            ),
+            "after_finetune_seen_type_test_accuracy": payload["seen_type_accuracy"],
+            "after_finetune_unseen_type_test_accuracy": payload["unseen_type_accuracy"],
+            "after_finetune_overall_test_accuracy": payload["overall_accuracy"],
+            "after_finetune_per_question_type_test_accuracy": payload["per_type_accuracy"],
             "seen_type_test_accuracy": payload["seen_type_accuracy"],
             "unseen_type_test_accuracy": payload["unseen_type_accuracy"],
             "overall_test_accuracy": payload["overall_accuracy"],
@@ -278,6 +426,7 @@ class GenerationEvalCallback(TrainerCallback):
             "train_count_per_question_type": self.train_type_counts,
             "best_eval_seen_type_accuracy": self.best_metric,
             "best_eval_step": self.best_step,
+            "best_model_checkpoint": best_model_checkpoint,
         }
         write_json(self.output_dir / "final_test_report.json", final_report)
         return final_report

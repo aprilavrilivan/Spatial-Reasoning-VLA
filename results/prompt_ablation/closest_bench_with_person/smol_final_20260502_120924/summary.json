@@ -1,0 +1,95 @@
+{
+  "model_family": "smol",
+  "question_type": "ClosestBenchWithPerson",
+  "original_prompt": "Each bench in the image has a visible number label beside it (e.g., 1, 2, 3, ...). Use these printed numbers as the bench IDs. Which bench is closest to the clock that has at least one person at it? Answer with the bench ID. If no benches have people, respond with '0'. ",
+  "optimized_prompt": "Each bench in the image has a visible number label beside it (e.g., 1, 2, 3, ...). Use these printed numbers as the bench IDs. First consider only benches that have at least one person at that bench. Among those benches, which one is closest to the clock? Answer with the bench ID. If no bench has a person, respond with '0'. ",
+  "splits": {
+    "evaluation": {
+      "num_examples": 300,
+      "original": {
+        "num_examples": 300,
+        "accuracy": 0.6833333333333333,
+        "gold_distribution": {
+          "0": 53,
+          "1": 52,
+          "2": 52,
+          "3": 52,
+          "4": 52,
+          "5": 39
+        },
+        "prediction_distribution": {
+          "0": 35,
+          "1": 49,
+          "2": 58,
+          "3": 78,
+          "4": 49,
+          "5": 31
+        }
+      },
+      "optimized": {
+        "num_examples": 300,
+        "accuracy": 0.5466666666666666,
+        "gold_distribution": {
+          "0": 53,
+          "1": 52,
+          "2": 52,
+          "3": 52,
+          "4": 52,
+          "5": 39
+        },
+        "prediction_distribution": {
+          "1": 77,
+          "2": 69,
+          "3": 72,
+          "4": 45,
+          "5": 37
+        }
+      },
+      "absolute_accuracy_change": -0.13666666666666671
+    },
+    "test": {
+      "num_examples": 300,
+      "original": {
+        "num_examples": 300,
+        "accuracy": 0.77,
+        "gold_distribution": {
+          "0": 50,
+          "1": 50,
+          "2": 50,
+          "3": 50,
+          "4": 50,
+          "5": 50
+        },
+        "prediction_distribution": {
+          "0": 36,
+          "1": 49,
+          "2": 65,
+          "3": 46,
+          "4": 53,
+          "5": 51
+        }
+      },
+      "optimized": {
+        "num_examples": 300,
+        "accuracy": 0.59,
+        "gold_distribution": {
+          "0": 50,
+          "1": 50,
+          "2": 50,
+          "3": 50,
+          "4": 50,
+          "5": 50
+        },
+        "prediction_distribution": {
+          "0": 5,
+          "1": 90,
+          "2": 63,
+          "3": 50,
+          "4": 41,
+          "5": 51
+        }
+      },
+      "absolute_accuracy_change": -0.18000000000000005
+    }
+  }
+}

@@ -1,17 +1,55 @@
+# macOS and editors
 .DS_Store
-.git_backup*/
+._*
 .vscode/
-__pycache__/
-*.pyc
-.ipynb_checkpoints/
+.idea/
+.claude/
 
-GRAID/graid/.venv/
-GRAID/graid/install/
-GRAID/graid/logs/
-
-scene_gen/output/
-
-./zoo-bus-vqa
-
+# Python environments and caches
+**/__pycache__/
+*.py[cod]
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
+**/.venv/
+**/venv/
+.env
+.env.*
+!.env.example
+
+# Local GRAID dependencies and generated data
+GRAID/graid/install/
+GRAID/graid/logs/
+GRAID/graid/data/
+GRAID/graid/datasets/
+
+# Generated scenes and local dataset copies
+scene_gen/output/
+zoo-bus-vqa/
+
+# Training artifacts retained locally but not published in Git
+zoo_bus_vqa_finetune/logs/
+zoo_bus_vqa_finetune/outputs/
+zoo_bus_vqa_finetune/external_eval/data/
+zoo_bus_vqa_finetune/external_eval/results/
+zoo_bus_vqa_finetune/external_eval/robotic_spatial_results/
+zoo_bus_vqa_finetune/wandb/
+*.safetensors
+
+# Real-robot raw runs retained locally; compact summaries remain trackable
+robot_deployment_qwen/controlStack/best_checkpoint/
+robot_deployment_qwen/dynamic_unit_tests/
+robot_deployment_qwen/complex_navigation/
+robot_deployment_qwen/**/images/
+robot_deployment_qwen/**/videos/
+robot_deployment_qwen/real_robot_results/
+
+# Scratch assets and unrelated local work
+paper_assets/yolo_candidate_scan/
+paper_assets/yolo_clean_candidate_scan/
+outputs/
+hybrid_rl_il_taxonomy_refined_compact.*
+learning-based-humanoid-wbc-survey-colored-regions*.pptx
+
+# Local safety copies
+.git_backup*/

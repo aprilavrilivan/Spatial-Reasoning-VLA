@@ -1,0 +1,59 @@
+{
+  "global_step": 2949,
+  "split": "eval",
+  "phase": "after_finetune",
+  "overall_accuracy": 0.162109375,
+  "relaxed_accuracy": 0.4775390625,
+  "macro_question_type_accuracy": 0.12255421764541702,
+  "macro_question_type_relaxed_accuracy": 0.3791594624596258,
+  "macro_answer_type_accuracy": 0.1141401674339673,
+  "macro_answer_type_relaxed_accuracy": 0.5932614360133036,
+  "num_samples": 1024,
+  "num_correct": 166,
+  "num_relaxed_correct": 489,
+  "per_question_type_accuracy": {
+    "DistanceSpatial": 0.007042253521126761,
+    "GeneralSpatial": 0.08695652173913043,
+    "ObjectSelection": 0.125,
+    "RelativePosition": 0.2,
+    "SizeSpatial": 0.09740259740259741,
+    "YesNoSpatial": 0.2189239332096475
+  },
+  "per_question_type_relaxed_accuracy": {
+    "DistanceSpatial": 0.2112676056338028,
+    "GeneralSpatial": 0.32608695652173914,
+    "ObjectSelection": 0.125,
+    "RelativePosition": 0.8074074074074075,
+    "SizeSpatial": 0.2597402597402597,
+    "YesNoSpatial": 0.5454545454545454
+  },
+  "per_answer_type_accuracy": {
+    "directional": 0.24935064935064935,
+    "long_phrase": 0.2894736842105263,
+    "numeric": 0.008620689655172414,
+    "short_phrase": 0.023255813953488372,
+    "yes_no": 0.0
+  },
+  "per_answer_type_relaxed_accuracy": {
+    "directional": 0.6935064935064935,
+    "long_phrase": 0.5263157894736842,
+    "numeric": 0.15229885057471265,
+    "short_phrase": 0.7441860465116279,
+    "yes_no": 0.85
+  },
+  "question_type_counts": {
+    "DistanceSpatial": 142,
+    "GeneralSpatial": 46,
+    "ObjectSelection": 8,
+    "RelativePosition": 135,
+    "SizeSpatial": 154,
+    "YesNoSpatial": 539
+  },
+  "answer_type_counts": {
+    "directional": 385,
+    "long_phrase": 228,
+    "numeric": 348,
+    "short_phrase": 43,
+    "yes_no": 20
+  }
+}

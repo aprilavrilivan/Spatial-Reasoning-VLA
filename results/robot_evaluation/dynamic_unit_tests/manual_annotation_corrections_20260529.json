@@ -1,0 +1,27 @@
+{
+  "created_at": "2026-05-29T15:31:11",
+  "corrections": [
+    {
+      "run_dir": "dynamic_20260528_193939",
+      "test_name": "obstacle_aware_closest_stop",
+      "trial": 1,
+      "old_human_success": false,
+      "new_human_success": true,
+      "old_failure_reason": "this should be counted as a successful experiment, I just incorrectly logged the experiment result to be fail",
+      "new_failure_reason": "arrived",
+      "old_notes": "no",
+      "new_notes": "manual correction: originally logged as fail; operator note says this trial should count as successful"
+    },
+    {
+      "run_dir": "dynamic_20260528_211352",
+      "test_name": "closest_occupied_bench_navigation",
+      "trial": 6,
+      "old_human_success": true,
+      "new_human_success": true,
+      "old_failure_reason": "failed_to_face_target",
+      "new_failure_reason": "arrived",
+      "old_notes": "no",
+      "new_notes": "manual success label; model loop had logged failed_to_face_target"
+    }
+  ]
+}

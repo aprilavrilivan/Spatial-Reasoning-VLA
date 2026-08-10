@@ -1,0 +1,168 @@
+<mxfile host="app.diagrams.net" modified="2026-06-06T00:00:00.000Z" agent="Codex" version="26.0.9" type="device">
+  <diagram id="zoo-bus-complex-fsm" name="Complex Navigation FSM">
+    <mxGraphModel dx="1600" dy="1300" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="Zoo-Bus Complex Navigation State Machine" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=27;fontStyle=1;fontColor=#17324D;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1520" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="subtitle" value="Two-stage closed loop: passenger pickup, then non-repeating animal-stop tour" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=14;fontColor=#506274;" vertex="1" parent="1">
+          <mxGeometry x="40" y="58" width="1520" height="24" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p1bg" value="" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F5F9FD;strokeColor=#AFC9DF;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="1520" height="300" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1head" value="PHASE 1  |  PICK UP ALL VISIBLE PASSENGERS" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#DCECF8;strokeColor=#6B9BC3;strokeWidth=1.5;fontFamily=Helvetica;fontSize=16;fontStyle=1;fontColor=#1F4E78;align=left;spacingLeft=14;" vertex="1" parent="1">
+          <mxGeometry x="55" y="115" width="1490" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="start" value="START" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#17324D;strokeColor=#17324D;fontColor=#FFFFFF;fontFamily=Helvetica;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="205" width="70" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="countPeople" value="&lt;b&gt;Count visible people&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A4B8A&quot;&gt;CountPeople&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F1EDFA;strokeColor=#7865A8;strokeWidth=2;fontFamily=Helvetica;fontSize=14;fontColor=#2B2B2B;" vertex="1" parent="1">
+          <mxGeometry x="175" y="195" width="180" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="peopleRemain" value="Count &gt; 0?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#477DA8;strokeWidth=2;fontFamily=Helvetica;fontSize=14;fontStyle=1;fontColor=#244A68;" vertex="1" parent="1">
+          <mxGeometry x="390" y="190" width="120" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="orderBenches" value="&lt;b&gt;Rank all benches&lt;/b&gt;&lt;br&gt;nearest to furthest&lt;br&gt;&lt;font color=&quot;#5A4B8A&quot;&gt;ClosestToFurthestBenches&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F1EDFA;strokeColor=#7865A8;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#2B2B2B;" vertex="1" parent="1">
+          <mxGeometry x="550" y="190" width="210" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="scanBenches" value="&lt;b&gt;Scan ranked benches&lt;/b&gt;&lt;br&gt;first bench with count &gt; 0&lt;br&gt;&lt;font color=&quot;#5A4B8A&quot;&gt;CountPeopleAtBench&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F1EDFA;strokeColor=#7865A8;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#2B2B2B;" vertex="1" parent="1">
+          <mxGeometry x="800" y="190" width="215" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="targetFound" value="Occupied bench&lt;br&gt;found?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#477DA8;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#244A68;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="190" width="125" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="navBench" value="&lt;b&gt;Navigate to selected bench&lt;/b&gt;&lt;br&gt;Call shared navigation subroutine" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EAF5EF;strokeColor=#4D8A68;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#28523C;" vertex="1" parent="1">
+          <mxGeometry x="1215" y="190" width="190" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="pickup" value="&lt;b&gt;STOP and pick up&lt;/b&gt;&lt;br&gt;Manually remove people&lt;br&gt;then re-observe scene" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFF3E2;strokeColor=#CC8B2B;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#704A12;" vertex="1" parent="1">
+          <mxGeometry x="1430" y="190" width="110" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="benchFallback" value="&lt;b&gt;Fallback target selection&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A4B8A&quot;&gt;ListBenchesWithAtLeastKPeople&lt;/font&gt; (k=1)&lt;br&gt;then nearest by &lt;font color=&quot;#5A4B8A&quot;&gt;PairwiseCloserBench&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=#FBFAFD;strokeColor=#9A8CB8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontColor=#4A4161;" vertex="1" parent="1">
+          <mxGeometry x="970" y="310" width="285" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p2bg" value="" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F5FBF7;strokeColor=#ACCFB9;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="420" width="1520" height="300" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2head" value="PHASE 2  |  VISIT ANIMAL STOP SIGNS WITHOUT REPETITION" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#DFF0E5;strokeColor=#6EA280;strokeWidth=1.5;fontFamily=Helvetica;fontSize=16;fontStyle=1;fontColor=#2D6645;align=left;spacingLeft=14;" vertex="1" parent="1">
+          <mxGeometry x="55" y="435" width="1490" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="phase2entry" value="CountPeople = 0" style="rounded=1;arcSize=20;whiteSpace=wrap;html=1;fillColor=#17324D;strokeColor=#17324D;fontColor=#FFFFFF;fontFamily=Helvetica;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="535" width="145" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="listStops" value="&lt;b&gt;Initialize animal-stop IDs&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A4B8A&quot;&gt;ListStopSignsWithAtLeastKAnimals&lt;/font&gt;&lt;br&gt;k=1; cap at max_stop_visits" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F1EDFA;strokeColor=#7865A8;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#2B2B2B;" vertex="1" parent="1">
+          <mxGeometry x="255" y="515" width="235" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="validStops" value="Non-empty&lt;br&gt;target set?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D8A68;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#28523C;" vertex="1" parent="1">
+          <mxGeometry x="525" y="515" width="125" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="selectStop" value="&lt;b&gt;Choose nearest unvisited stop&lt;/b&gt;&lt;br&gt;filter visited_stop_ids, then tournament&lt;br&gt;&lt;font color=&quot;#5A4B8A&quot;&gt;PairwiseCloserStopSign&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F1EDFA;strokeColor=#7865A8;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#2B2B2B;" vertex="1" parent="1">
+          <mxGeometry x="690" y="515" width="245" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="navStop" value="&lt;b&gt;Navigate to selected stop&lt;/b&gt;&lt;br&gt;Call shared navigation subroutine" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EAF5EF;strokeColor=#4D8A68;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#28523C;" vertex="1" parent="1">
+          <mxGeometry x="975" y="515" width="190" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="markStop" value="&lt;b&gt;STOP, visit, mark ID&lt;/b&gt;&lt;br&gt;visited_stop_ids.add(target)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFF3E2;strokeColor=#CC8B2B;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#704A12;" vertex="1" parent="1">
+          <mxGeometry x="1205" y="515" width="180" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="allVisited" value="All initialized&lt;br&gt;IDs visited?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D8A68;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#28523C;" vertex="1" parent="1">
+          <mxGeometry x="1420" y="515" width="125" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="stopFallback" value="&lt;b&gt;Fallback discovery / selection&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A4B8A&quot;&gt;ClosestToFurthestStopSigns&lt;/font&gt; + &lt;font color=&quot;#5A4B8A&quot;&gt;CountAnimalsAtStopSign&lt;/font&gt;&lt;br&gt;For selection fallback, choose first remaining ID in predicted order." style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=#FBFAFD;strokeColor=#9A8CB8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontColor=#4A4161;" vertex="1" parent="1">
+          <mxGeometry x="450" y="630" width="420" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="success" value="TASK&lt;br&gt;SUCCESS" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#2E7D4F;strokeColor=#245F3D;strokeWidth=2;fontColor=#FFFFFF;fontFamily=Helvetica;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1438" y="635" width="90" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="navbg" value="" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FAFBFC;strokeColor=#AEB8C2;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="740" width="1520" height="410" as="geometry"/>
+        </mxCell>
+        <mxCell id="navhead" value="SHARED OBSTACLE-AWARE NAVIGATION SUBROUTINE  |  target kind = bench or stop sign; target ID = g" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#E8EDF2;strokeColor=#8898A7;strokeWidth=1.5;fontFamily=Helvetica;fontSize=16;fontStyle=1;fontColor=#34495E;align=left;spacingLeft=14;" vertex="1" parent="1">
+          <mxGeometry x="55" y="755" width="1490" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="navEntry" value="Enter with target g" style="rounded=1;arcSize=20;whiteSpace=wrap;html=1;fillColor=#34495E;strokeColor=#34495E;fontColor=#FFFFFF;fontFamily=Helvetica;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="75" y="885" width="145" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrival" value="&lt;b&gt;Arrived at g?&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A4B8A&quot;&gt;ArrivedAtBench&lt;/font&gt;&lt;br&gt;or&lt;br&gt;&lt;font color=&quot;#5A4B8A&quot;&gt;ArrivedAtAnimalsAroundStopSigns&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#667788;strokeWidth=2;fontFamily=Helvetica;fontSize=11;fontColor=#34495E;" vertex="1" parent="1">
+          <mxGeometry x="260" y="845" width="190" height="135" as="geometry"/>
+        </mxCell>
+        <mxCell id="stopReturn" value="STOP&lt;br&gt;return success" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#DFF0E5;strokeColor=#4D8A68;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#28523C;" vertex="1" parent="1">
+          <mxGeometry x="285" y="1015" width="140" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="turn" value="&lt;b&gt;Facing g?&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A4B8A&quot;&gt;TurnDirectionToBench&lt;/font&gt;&lt;br&gt;or&lt;br&gt;&lt;font color=&quot;#5A4B8A&quot;&gt;TurnDirectionToStopSign&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#667788;strokeWidth=2;fontFamily=Helvetica;fontSize=11;fontColor=#34495E;" vertex="1" parent="1">
+          <mxGeometry x="510" y="845" width="190" height="135" as="geometry"/>
+        </mxCell>
+        <mxCell id="turnAction" value="&lt;b&gt;Turn toward target&lt;/b&gt;&lt;br&gt;turn left/right by turn_deg" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFF3E2;strokeColor=#CC8B2B;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#704A12;" vertex="1" parent="1">
+          <mxGeometry x="535" y="1015" width="140" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="avoid" value="&lt;b&gt;Choose obstacle action&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A4B8A&quot;&gt;AvoidObstacleToReachBench&lt;/font&gt;&lt;br&gt;or&lt;br&gt;&lt;font color=&quot;#5A4B8A&quot;&gt;AvoidObstacleToReachStopSign&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F1EDFA;strokeColor=#7865A8;strokeWidth=2;fontFamily=Helvetica;fontSize=11;fontColor=#2B2B2B;" vertex="1" parent="1">
+          <mxGeometry x="770" y="855" width="235" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="motion" value="&lt;b&gt;Execute action&lt;/b&gt;&lt;br&gt;keep straight → forward step_cm&lt;br&gt;turn left/right → 3×turn_deg + forward" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFF3E2;strokeColor=#CC8B2B;strokeWidth=2;fontFamily=Helvetica;fontSize=12;fontColor=#704A12;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="855" width="230" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="observe" value="Re-observe live camera frame" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#E8EDF2;strokeColor=#8898A7;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontStyle=2;fontColor=#34495E;" vertex="1" parent="1">
+          <mxGeometry x="1325" y="880" width="185" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="guard" value="&lt;b&gt;Failure guards&lt;/b&gt;&lt;br&gt;unparsable answer · no valid target · max_steps / max_pickups exceeded · navigation failure · manual interrupt" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=#FFF4F3;strokeColor=#C75C54;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontColor=#7D302B;" vertex="1" parent="1">
+          <mxGeometry x="870" y="1050" width="430" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="failure" value="TASK&lt;br&gt;FAILURE" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#B84B43;strokeColor=#8F3731;strokeWidth=2;fontColor=#FFFFFF;fontFamily=Helvetica;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1355" y="1045" width="100" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="legend" value="Purple = exact ObjectDetectionQ question type   |   Orange = physical action   |   Dashed = fallback or failure path" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontFamily=Helvetica;fontSize=12;fontColor=#506274;" vertex="1" parent="1">
+          <mxGeometry x="300" y="1170" width="1000" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;" edge="1" parent="1" source="start" target="countPeople"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;" edge="1" parent="1" source="countPeople" target="peopleRemain"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="peopleRemain" target="orderBenches"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;" edge="1" parent="1" source="orderBenches" target="scanBenches"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;" edge="1" parent="1" source="scanBenches" target="targetFound"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="targetFound" target="navBench"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" value="Reached" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="navBench" target="pickup"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" value="Updated scene" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#477DA8;strokeWidth=2;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="pickup" target="countPeople">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1485" y="170"/><mxPoint x="265" y="170"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e9" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;dashed=1;strokeColor=#7865A8;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="targetFound" target="benchFallback"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e10" value="Recovered target" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;dashed=1;strokeColor=#7865A8;strokeWidth=1.5;fontSize=10;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="benchFallback" target="navBench"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e11" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="peopleRemain" target="phase2entry">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="450" y="390"/><mxPoint x="142" y="390"/></Array></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;" edge="1" parent="1" source="phase2entry" target="listStops"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;" edge="1" parent="1" source="listStops" target="validStops"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e14" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="validStops" target="selectStop"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;" edge="1" parent="1" source="selectStop" target="navStop"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e16" value="Reached" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="navStop" target="markStop"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#334E68;strokeWidth=2;" edge="1" parent="1" source="markStop" target="allVisited"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e18" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#2E7D4F;strokeWidth=2;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="allVisited" target="success"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e19" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#4D8A68;strokeWidth=2;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="allVisited" target="selectStop">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1482" y="490"/><mxPoint x="812" y="490"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e20" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;dashed=1;strokeColor=#7865A8;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="validStops" target="stopFallback"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e21" value="Recovered IDs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;dashed=1;strokeColor=#7865A8;strokeWidth=1.5;fontSize=10;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="stopFallback" target="selectStop"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e22" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#52677A;strokeWidth=2;" edge="1" parent="1" source="navEntry" target="arrival"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e23" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#2E7D4F;strokeWidth=2;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="arrival" target="stopReturn"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e24" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#52677A;strokeWidth=2;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="arrival" target="turn"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e25" value="turn left / turn right" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#52677A;strokeWidth=2;fontSize=10;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="turn" target="turnAction"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e26" value="already facing" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#52677A;strokeWidth=2;fontSize=10;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="turn" target="avoid"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e27" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#52677A;strokeWidth=2;" edge="1" parent="1" source="avoid" target="motion"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e28" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#52677A;strokeWidth=2;" edge="1" parent="1" source="motion" target="observe"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e29" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#52677A;strokeWidth=2;" edge="1" parent="1" source="observe" target="arrival">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1417" y="820"/><mxPoint x="355" y="820"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e30" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#52677A;strokeWidth=2;" edge="1" parent="1" source="turnAction" target="observe"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e31" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;dashed=1;strokeColor=#B84B43;strokeWidth=1.5;" edge="1" parent="1" source="guard" target="failure"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

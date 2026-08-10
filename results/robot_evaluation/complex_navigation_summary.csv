@@ -1,0 +1,8 @@
+run_id,run_label,controller_complete,physical_success,failure_reason
+dynamic_20260601_111150,finetuned_qwen,True,False,"Hallucination of people at benchb two, which when ignoring disappears. Clustering problem with bench 4 and 5"
+dynamic_20260601_114420,finetuned_qwen,True,True,task_complete
+dynamic_20260601_120236,finetuned_qwen,True,True,task_complete
+dynamic_20260601_121434,base_qwen,False,False,kept turning right
+dynamic_20260601_122443,base_qwen,False,False,robot still spinning
+dynamic_20260601_122720,base_qwen,False,False,still spinning
+dynamic_20260601_122939,finetuned_qwen,True,True,task_complete

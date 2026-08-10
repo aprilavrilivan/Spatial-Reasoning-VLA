@@ -1,0 +1,191 @@
+{
+  "model_family": "smol",
+  "question_type": "ClosestBenchWithPerson",
+  "prompt_variants": {
+    "original": "Each bench in the image has a visible number label beside it (e.g., 1, 2, 3, ...). Use these printed numbers as the bench IDs. Which bench is closest to the clock that has at least one person at it? Answer with the bench ID. If no benches have people, respond with '0'. ",
+    "direct_relative": "Each bench in the image has a visible number label beside it (e.g., 1, 2, 3, ...). Use these printed numbers as the bench IDs. Which bench that has at least one person at it is closest to the clock? Answer with the bench ID. If no bench has a person, respond with '0'. ",
+    "among_with_people": "Each bench in the image has a visible number label beside it (e.g., 1, 2, 3, ...). Use these printed numbers as the bench IDs. Among the benches that have at least one person at them, which bench is closest to the clock? Answer with the bench ID. If no bench has a person, respond with '0'. ",
+    "filter_first": "Each bench in the image has a visible number label beside it (e.g., 1, 2, 3, ...). Use these printed numbers as the bench IDs. First consider only benches that have at least one person at that bench. Among those benches, which one is closest to the clock? Answer with the bench ID. If no bench has a person, respond with '0'. "
+  },
+  "splits": {
+    "evaluation": {
+      "num_examples": 300,
+      "variants": {
+        "original": {
+          "num_examples": 300,
+          "accuracy": 0.6833333333333333,
+          "gold_distribution": {
+            "0": 53,
+            "1": 52,
+            "2": 52,
+            "3": 52,
+            "4": 52,
+            "5": 39
+          },
+          "prediction_distribution": {
+            "0": 35,
+            "1": 49,
+            "2": 58,
+            "3": 78,
+            "4": 49,
+            "5": 31
+          }
+        },
+        "direct_relative": {
+          "num_examples": 300,
+          "accuracy": 0.7433333333333333,
+          "gold_distribution": {
+            "0": 53,
+            "1": 52,
+            "2": 52,
+            "3": 52,
+            "4": 52,
+            "5": 39
+          },
+          "prediction_distribution": {
+            "0": 46,
+            "1": 49,
+            "2": 50,
+            "3": 75,
+            "4": 43,
+            "5": 37
+          }
+        },
+        "among_with_people": {
+          "num_examples": 300,
+          "accuracy": 0.6633333333333333,
+          "gold_distribution": {
+            "0": 53,
+            "1": 52,
+            "2": 52,
+            "3": 52,
+            "4": 52,
+            "5": 39
+          },
+          "prediction_distribution": {
+            "0": 33,
+            "1": 49,
+            "2": 63,
+            "3": 73,
+            "4": 45,
+            "5": 37
+          }
+        },
+        "filter_first": {
+          "num_examples": 300,
+          "accuracy": 0.5466666666666666,
+          "gold_distribution": {
+            "0": 53,
+            "1": 52,
+            "2": 52,
+            "3": 52,
+            "4": 52,
+            "5": 39
+          },
+          "prediction_distribution": {
+            "1": 77,
+            "2": 69,
+            "3": 72,
+            "4": 45,
+            "5": 37
+          }
+        }
+      },
+      "absolute_accuracy_change_vs_original": {
+        "direct_relative": 0.05999999999999994,
+        "among_with_people": -0.020000000000000018,
+        "filter_first": -0.13666666666666671
+      }
+    },
+    "test": {
+      "num_examples": 300,
+      "variants": {
+        "original": {
+          "num_examples": 300,
+          "accuracy": 0.77,
+          "gold_distribution": {
+            "0": 50,
+            "1": 50,
+            "2": 50,
+            "3": 50,
+            "4": 50,
+            "5": 50
+          },
+          "prediction_distribution": {
+            "0": 36,
+            "1": 49,
+            "2": 65,
+            "3": 46,
+            "4": 53,
+            "5": 51
+          }
+        },
+        "direct_relative": {
+          "num_examples": 300,
+          "accuracy": 0.8,
+          "gold_distribution": {
+            "0": 50,
+            "1": 50,
+            "2": 50,
+            "3": 50,
+            "4": 50,
+            "5": 50
+          },
+          "prediction_distribution": {
+            "0": 48,
+            "1": 52,
+            "2": 57,
+            "3": 49,
+            "4": 52,
+            "5": 42
+          }
+        },
+        "among_with_people": {
+          "num_examples": 300,
+          "accuracy": 0.7066666666666667,
+          "gold_distribution": {
+            "0": 50,
+            "1": 50,
+            "2": 50,
+            "3": 50,
+            "4": 50,
+            "5": 50
+          },
+          "prediction_distribution": {
+            "0": 41,
+            "1": 62,
+            "2": 66,
+            "3": 42,
+            "4": 42,
+            "5": 47
+          }
+        },
+        "filter_first": {
+          "num_examples": 300,
+          "accuracy": 0.59,
+          "gold_distribution": {
+            "0": 50,
+            "1": 50,
+            "2": 50,
+            "3": 50,
+            "4": 50,
+            "5": 50
+          },
+          "prediction_distribution": {
+            "0": 5,
+            "1": 90,
+            "2": 63,
+            "3": 50,
+            "4": 41,
+            "5": 51
+          }
+        }
+      },
+      "absolute_accuracy_change_vs_original": {
+        "direct_relative": 0.030000000000000027,
+        "among_with_people": -0.06333333333333335,
+        "filter_first": -0.18000000000000005
+      }
+    }
+  }
+}

@@ -1,1 +1,12 @@
-# TODO: Add ignore rules later.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+logs/
+outputs/
+external_eval/data/
+external_eval/results/
+external_eval/robotic_spatial_results/
+wandb/
+*.safetensors
+*.bin

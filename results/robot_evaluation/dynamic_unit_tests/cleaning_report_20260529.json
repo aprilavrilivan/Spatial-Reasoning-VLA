@@ -1,0 +1,233 @@
+{
+  "created_at": "2026-05-29T15:26:45",
+  "rule": "Blank human_success final rows were completed as follows: meaningful notes -> fail and move note to failure_reason; model_loop_success false -> fail; model_loop_success true with no failure note -> success. Runs without final results were ignored.",
+  "changed_final_rows": 17,
+  "ignored_runs": [
+    {
+      "run_dir": "dynamic_20260526_195542",
+      "reason": "no final row"
+    },
+    {
+      "run_dir": "dynamic_20260527_175617",
+      "reason": "missing results.json"
+    },
+    {
+      "run_dir": "dynamic_20260527_175627",
+      "reason": "no final row"
+    },
+    {
+      "run_dir": "dynamic_20260528_194242",
+      "reason": "missing results.json"
+    },
+    {
+      "run_dir": "dynamic_20260528_203753",
+      "reason": "missing results.json"
+    }
+  ],
+  "changes": [
+    {
+      "run_dir": "dynamic_20260526_182047",
+      "test_name": "face_arrive_bench",
+      "trial": 2,
+      "model_loop_success": true,
+      "old_human_success": "",
+      "new_human_success": true,
+      "old_failure_reason": "arrived",
+      "new_failure_reason": "arrived",
+      "old_notes": "no",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260526_185038",
+      "test_name": "face_arrive_bench",
+      "trial": 2,
+      "model_loop_success": true,
+      "old_human_success": "",
+      "new_human_success": true,
+      "old_failure_reason": "arrived",
+      "new_failure_reason": "arrived",
+      "old_notes": "no",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260527_190043",
+      "test_name": "egocentric_bench",
+      "trial": 1,
+      "model_loop_success": false,
+      "old_human_success": "",
+      "new_human_success": false,
+      "old_failure_reason": "timeout",
+      "new_failure_reason": "timeout",
+      "old_notes": "no",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260527_203427",
+      "test_name": "closest_bench_navigation",
+      "trial": 1,
+      "model_loop_success": false,
+      "old_human_success": "",
+      "new_human_success": false,
+      "old_failure_reason": "failed_to_face_target",
+      "new_failure_reason": "failed_to_face_target",
+      "old_notes": "no",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260527_205851",
+      "test_name": "closest_stop_navigation",
+      "trial": 1,
+      "model_loop_success": false,
+      "old_human_success": "",
+      "new_human_success": false,
+      "old_failure_reason": "failed_to_face_target",
+      "new_failure_reason": "reasoned the correct closest stop sign but failed to reason the correct turning direction",
+      "old_notes": "reasoned the correct closest stopsign but failed to reason correct turing direction",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260527_212848",
+      "test_name": "pairwise_bench_then_visit",
+      "trial": 1,
+      "model_loop_success": false,
+      "old_human_success": "",
+      "new_human_success": false,
+      "old_failure_reason": "failed_to_face_target",
+      "new_failure_reason": "reasoned the correct closer bench but failed to turn to correct direction",
+      "old_notes": "reasoned the correct closer bench but failed to turn to correct direction",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260527_213611",
+      "test_name": "pairwise_bench_then_visit",
+      "trial": 1,
+      "model_loop_success": false,
+      "old_human_success": "",
+      "new_human_success": false,
+      "old_failure_reason": "failed_to_face_target",
+      "new_failure_reason": "failed to reason both the correct bench id and the correct turning direction",
+      "old_notes": "failed to reason both the correct bench id and the correct turning direction",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260527_214100",
+      "test_name": "pairwise_bench_then_visit",
+      "trial": 1,
+      "model_loop_success": false,
+      "old_human_success": "",
+      "new_human_success": false,
+      "old_failure_reason": "failed_to_face_target",
+      "new_failure_reason": "reasoned the correct closer bench but failed to turn to correct direction",
+      "old_notes": "reasoned the correct closer bench but failed to turn to correct direction",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260528_201955",
+      "test_name": "obstacle_aware_stop",
+      "trial": 1,
+      "model_loop_success": false,
+      "old_human_success": "",
+      "new_human_success": false,
+      "old_failure_reason": "timeout",
+      "new_failure_reason": "timeout",
+      "old_notes": "no",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260528_204443",
+      "test_name": "ordered_visit_benches",
+      "trial": 1,
+      "model_loop_success": false,
+      "old_human_success": "",
+      "new_human_success": false,
+      "old_failure_reason": "ordered_visit_failed",
+      "new_failure_reason": "ordered_visit_failed",
+      "old_notes": "no",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260528_204443",
+      "test_name": "ordered_visit_benches",
+      "trial": 4,
+      "model_loop_success": false,
+      "old_human_success": "",
+      "new_human_success": false,
+      "old_failure_reason": "ordered_visit_failed",
+      "new_failure_reason": "ordered_visit_failed",
+      "old_notes": "no",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260528_204443",
+      "test_name": "ordered_visit_benches",
+      "trial": 5,
+      "model_loop_success": false,
+      "old_human_success": "",
+      "new_human_success": false,
+      "old_failure_reason": "ordered_visit_failed",
+      "new_failure_reason": "reasoned the correct closest-to-furthest bench order but not the correct turning direction to face a target bench",
+      "old_notes": "resoned the correct distance list from close to far but not the correct turning direction to face a certain bench",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260528_210306",
+      "test_name": "ordered_visit_stops",
+      "trial": 2,
+      "model_loop_success": false,
+      "old_human_success": "",
+      "new_human_success": false,
+      "old_failure_reason": "ordered_visit_failed",
+      "new_failure_reason": "ordered_visit_failed",
+      "old_notes": "no",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260528_211352",
+      "test_name": "closest_occupied_bench_navigation",
+      "trial": 3,
+      "model_loop_success": true,
+      "old_human_success": "",
+      "new_human_success": true,
+      "old_failure_reason": "arrived",
+      "new_failure_reason": "arrived",
+      "old_notes": "no",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260528_211352",
+      "test_name": "closest_occupied_bench_navigation",
+      "trial": 4,
+      "model_loop_success": true,
+      "old_human_success": "",
+      "new_human_success": true,
+      "old_failure_reason": "arrived",
+      "new_failure_reason": "arrived",
+      "old_notes": "no",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260528_211352",
+      "test_name": "closest_occupied_bench_navigation",
+      "trial": 5,
+      "model_loop_success": true,
+      "old_human_success": "",
+      "new_human_success": false,
+      "old_failure_reason": "arrived",
+      "new_failure_reason": "reasoned the closest bench instead of closest bench with person, the count person at closest bench is correct",
+      "old_notes": "reasoned the closest bench instead of closest bench with person, the count person at closest bench is correct",
+      "new_notes": ""
+    },
+    {
+      "run_dir": "dynamic_20260528_212136",
+      "test_name": "closest_occupied_bench_navigation",
+      "trial": 4,
+      "model_loop_success": false,
+      "old_human_success": "",
+      "new_human_success": false,
+      "old_failure_reason": "failed_to_face_target",
+      "new_failure_reason": "failed_to_face_target",
+      "old_notes": "no",
+      "new_notes": ""
+    }
+  ]
+}

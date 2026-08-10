@@ -1,0 +1,101 @@
+{
+  "before_finetune": null,
+  "after_finetune": {
+    "global_step": 2949,
+    "split": "test",
+    "phase": "after_finetune",
+    "overall_accuracy": 0.1435546875,
+    "relaxed_accuracy": 0.42578125,
+    "macro_question_type_accuracy": 0.1070078296516485,
+    "macro_question_type_relaxed_accuracy": 0.37292358803986714,
+    "macro_answer_type_accuracy": 0.09897712358045757,
+    "macro_answer_type_relaxed_accuracy": 0.5732316918699726,
+    "num_samples": 1024,
+    "num_correct": 147,
+    "num_relaxed_correct": 436,
+    "per_question_type_accuracy": {
+      "DistanceSpatial": 0.03289473684210526,
+      "GeneralSpatial": 0.15,
+      "ObjectSelection": 0.0,
+      "RelativePosition": 0.19166666666666668,
+      "SizeSpatial": 0.08139534883720931,
+      "YesNoSpatial": 0.18609022556390978
+    },
+    "per_question_type_relaxed_accuracy": {
+      "DistanceSpatial": 0.25,
+      "GeneralSpatial": 0.4,
+      "ObjectSelection": 0.125,
+      "RelativePosition": 0.725,
+      "SizeSpatial": 0.27325581395348836,
+      "YesNoSpatial": 0.4642857142857143
+    },
+    "per_answer_type_accuracy": {
+      "directional": 0.22189349112426035,
+      "long_phrase": 0.2625482625482625,
+      "numeric": 0.010443864229765013,
+      "short_phrase": 0.0,
+      "yes_no": 0.0
+    },
+    "per_answer_type_relaxed_accuracy": {
+      "directional": 0.6005917159763313,
+      "long_phrase": 0.5096525096525096,
+      "numeric": 0.1801566579634465,
+      "short_phrase": 0.6666666666666666,
+      "yes_no": 0.9090909090909091
+    },
+    "question_type_counts": {
+      "DistanceSpatial": 152,
+      "GeneralSpatial": 40,
+      "ObjectSelection": 8,
+      "RelativePosition": 120,
+      "SizeSpatial": 172,
+      "YesNoSpatial": 532
+    },
+    "answer_type_counts": {
+      "directional": 338,
+      "long_phrase": 259,
+      "numeric": 383,
+      "short_phrase": 33,
+      "yes_no": 11
+    }
+  },
+  "before_finetune_overall_test_accuracy": null,
+  "after_finetune_overall_test_accuracy": 0.1435546875,
+  "after_finetune_relaxed_test_accuracy": 0.42578125,
+  "after_finetune_macro_question_type_test_accuracy": 0.1070078296516485,
+  "after_finetune_macro_question_type_relaxed_test_accuracy": 0.37292358803986714,
+  "after_finetune_macro_answer_type_test_accuracy": 0.09897712358045757,
+  "after_finetune_macro_answer_type_relaxed_test_accuracy": 0.5732316918699726,
+  "after_finetune_per_question_type_test_accuracy": {
+    "DistanceSpatial": 0.03289473684210526,
+    "GeneralSpatial": 0.15,
+    "ObjectSelection": 0.0,
+    "RelativePosition": 0.19166666666666668,
+    "SizeSpatial": 0.08139534883720931,
+    "YesNoSpatial": 0.18609022556390978
+  },
+  "after_finetune_per_question_type_relaxed_test_accuracy": {
+    "DistanceSpatial": 0.25,
+    "GeneralSpatial": 0.4,
+    "ObjectSelection": 0.125,
+    "RelativePosition": 0.725,
+    "SizeSpatial": 0.27325581395348836,
+    "YesNoSpatial": 0.4642857142857143
+  },
+  "after_finetune_per_answer_type_test_accuracy": {
+    "directional": 0.22189349112426035,
+    "long_phrase": 0.2625482625482625,
+    "numeric": 0.010443864229765013,
+    "short_phrase": 0.0,
+    "yes_no": 0.0
+  },
+  "after_finetune_per_answer_type_relaxed_test_accuracy": {
+    "directional": 0.6005917159763313,
+    "long_phrase": 0.5096525096525096,
+    "numeric": 0.1801566579634465,
+    "short_phrase": 0.6666666666666666,
+    "yes_no": 0.9090909090909091
+  },
+  "best_eval_overall_accuracy": 0.162109375,
+  "best_eval_step": 2949
+}

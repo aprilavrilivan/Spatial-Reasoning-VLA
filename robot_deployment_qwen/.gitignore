@@ -1,0 +1,15 @@
+lf-3pi/bin/
+lf-3pi/src-gen/
+lf-3pi/include/
+__pycache__/
+*.py[cod]
+.DS_Store
+._*
+.venv/
+controlStack/best_checkpoint/
+dynamic_unit_tests/
+complex_navigation/
+**/images/
+**/videos/
+real_robot_results/
+*.safetensors

@@ -1,0 +1,172 @@
+[
+  {
+    "test_name": "bench_with_at_least_k_people",
+    "base_successes": 0,
+    "base_trials": 5,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 5,
+    "finetuned_trials": 5,
+    "finetuned_accuracy_pct": 100.0,
+    "delta_pct": 100.0
+  },
+  {
+    "test_name": "closest_bench_navigation",
+    "base_successes": 0,
+    "base_trials": 5,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 5,
+    "finetuned_trials": 5,
+    "finetuned_accuracy_pct": 100.0,
+    "delta_pct": 100.0
+  },
+  {
+    "test_name": "closest_occupied_bench_navigation",
+    "base_successes": 0,
+    "base_trials": 10,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 5,
+    "finetuned_trials": 10,
+    "finetuned_accuracy_pct": 50.0,
+    "delta_pct": 50.0
+  },
+  {
+    "test_name": "closest_stop_navigation",
+    "base_successes": 0,
+    "base_trials": 3,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 3,
+    "finetuned_trials": 3,
+    "finetuned_accuracy_pct": 100.0,
+    "delta_pct": 100.0
+  },
+  {
+    "test_name": "egocentric_bench",
+    "base_successes": 0,
+    "base_trials": 5,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 10,
+    "finetuned_trials": 10,
+    "finetuned_accuracy_pct": 100.0,
+    "delta_pct": 100.0
+  },
+  {
+    "test_name": "egocentric_stop",
+    "base_successes": 0,
+    "base_trials": 3,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 6,
+    "finetuned_trials": 6,
+    "finetuned_accuracy_pct": 100.0,
+    "delta_pct": 100.0
+  },
+  {
+    "test_name": "face_arrive_bench",
+    "base_successes": 0,
+    "base_trials": 7,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 16,
+    "finetuned_trials": 17,
+    "finetuned_accuracy_pct": 94.1,
+    "delta_pct": 94.1
+  },
+  {
+    "test_name": "face_arrive_stop",
+    "base_successes": 0,
+    "base_trials": 6,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 8,
+    "finetuned_trials": 9,
+    "finetuned_accuracy_pct": 88.9,
+    "delta_pct": 88.9
+  },
+  {
+    "test_name": "obstacle_aware_bench",
+    "base_successes": 1,
+    "base_trials": 6,
+    "base_accuracy_pct": 16.7,
+    "finetuned_successes": 8,
+    "finetuned_trials": 8,
+    "finetuned_accuracy_pct": 100.0,
+    "delta_pct": 83.3
+  },
+  {
+    "test_name": "obstacle_aware_closest_bench",
+    "base_successes": 0,
+    "base_trials": 3,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 4,
+    "finetuned_trials": 5,
+    "finetuned_accuracy_pct": 80.0,
+    "delta_pct": 80.0
+  },
+  {
+    "test_name": "obstacle_aware_closest_stop",
+    "base_successes": 0,
+    "base_trials": 3,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 5,
+    "finetuned_trials": 5,
+    "finetuned_accuracy_pct": 100.0,
+    "delta_pct": 100.0
+  },
+  {
+    "test_name": "obstacle_aware_stop",
+    "base_successes": 0,
+    "base_trials": 3,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 5,
+    "finetuned_trials": 7,
+    "finetuned_accuracy_pct": 71.4,
+    "delta_pct": 71.4
+  },
+  {
+    "test_name": "ordered_visit_benches",
+    "base_successes": 0,
+    "base_trials": 5,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 5,
+    "finetuned_trials": 5,
+    "finetuned_accuracy_pct": 100.0,
+    "delta_pct": 100.0
+  },
+  {
+    "test_name": "ordered_visit_stops",
+    "base_successes": 0,
+    "base_trials": 5,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 4,
+    "finetuned_trials": 5,
+    "finetuned_accuracy_pct": 80.0,
+    "delta_pct": 80.0
+  },
+  {
+    "test_name": "pairwise_bench_then_visit",
+    "base_successes": 1,
+    "base_trials": 5,
+    "base_accuracy_pct": 20.0,
+    "finetuned_successes": 5,
+    "finetuned_trials": 5,
+    "finetuned_accuracy_pct": 100.0,
+    "delta_pct": 80.0
+  },
+  {
+    "test_name": "pairwise_stop_then_visit",
+    "base_successes": 0,
+    "base_trials": 3,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 3,
+    "finetuned_trials": 3,
+    "finetuned_accuracy_pct": 100.0,
+    "delta_pct": 100.0
+  },
+  {
+    "test_name": "stop_with_at_least_k_animals",
+    "base_successes": 0,
+    "base_trials": 4,
+    "base_accuracy_pct": 0.0,
+    "finetuned_successes": 4,
+    "finetuned_trials": 4,
+    "finetuned_accuracy_pct": 100.0,
+    "delta_pct": 100.0
+  }
+]
